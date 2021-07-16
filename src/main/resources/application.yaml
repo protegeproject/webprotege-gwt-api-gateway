@@ -1,0 +1,12 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: login_route
+          uri: http://example.com
+          predicates:
+            - Path=/login/
+        - id: rpc_route
+          uri: http://blah.com
+          predicates:
+            - Path=/gwt/rpc
