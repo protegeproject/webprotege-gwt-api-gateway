@@ -1,12 +1,36 @@
+server:
+  port: 8072
+
 spring:
+  application:
+    name: webprotege-gwt-api-gateway
+
   cloud:
-    gateway:
-      routes:
-        - id: login_route
-          uri: http://example.com
-          predicates:
-            - Path=/login/
-        - id: rpc_route
-          uri: http://blah.com
-          predicates:
-            - Path=/gwt/rpc
+    stream:
+      bindings:
+
+        sending-out-0:
+          destination: api-calls
+          content-type: application/json
+
+        replyHandler-in-0:
+          destination: foobarman
+          content-type: application/json
+          group: api-call-replies
+
+
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            token-uri: http://localhost:8080/auth/realms/webprotege-realm/protocol/openid-connect/token
+            authorization-uri: http://localhost:8080/auth/realms/webprotege-realm/protocol/openid-connect/auth
+            userinfo-uri: http://localhost:8080/auth/realms/webprotege-realm/protocol/openid-connect/userinfo
+            user-name-attribute: preferred_username
+        registration:
+          keycloak:
+            provider: keycloak
+            client-id: webprotege
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/keycloak"
