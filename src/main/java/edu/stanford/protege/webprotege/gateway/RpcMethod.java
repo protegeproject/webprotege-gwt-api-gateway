@@ -1,5 +1,6 @@
 package edu.stanford.protege.webprotege.gateway;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
@@ -11,6 +12,7 @@ public class RpcMethod {
 
     private final String methodName;
 
+    @JsonCreator
     public RpcMethod(String methodName) {
         this.methodName = methodName;
     }

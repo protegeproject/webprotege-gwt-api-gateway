@@ -13,10 +13,9 @@ import java.util.Optional;
  * Stanford Center for Biomedical Informatics Research
  * 2021-07-21
  */
-public record RpcResponse(String correlationId, @Nullable RpcError error, @Nullable Map<String, Object> result) {
+public record RpcResponse(@Nullable RpcError error, @Nullable Map<String, Object> result) {
 
     public RpcResponse {
-        Objects.requireNonNull(correlationId);
         if(error == null) {
             if(result == null) {
                 throw new IllegalArgumentException("One of error or result MUST NOT be null");
@@ -30,14 +29,12 @@ public record RpcResponse(String correlationId, @Nullable RpcError error, @Nulla
     }
 
     @Nonnull
-    public static RpcResponse forResult(@Nonnull String correlationId,
-                                        @Nonnull Map<String, Object> result) {
-        return new RpcResponse(correlationId, null, result);
+    public static RpcResponse forResult(@Nonnull Map<String, Object> result) {
+        return new RpcResponse(null, result);
     }
 
     @Nonnull
-    public static RpcResponse forError(@Nonnull String correlationId,
-                                       @Nonnull RpcError rpcError) {
-        return new RpcResponse(correlationId, rpcError, null);
+    public static RpcResponse forError(@Nonnull RpcError rpcError) {
+        return new RpcResponse(rpcError, null);
     }
 }

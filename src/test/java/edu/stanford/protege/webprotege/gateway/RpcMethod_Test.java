@@ -2,7 +2,10 @@ package edu.stanford.protege.webprotege.gateway;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.json.AutoConfigureJson;
+import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.json.JacksonTester;
 
 import java.io.IOException;
@@ -10,12 +13,12 @@ import java.io.IOException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@JsonTest
+@SpringBootTest
+@AutoConfigureJsonTesters
 class RpcMethod_Test {
 
     public static final String METHOD_NAME = "MethodX";
 
-    /** @noinspection SpringJavaInjectionPointsAutowiringInspection*/
     @Autowired
     private JacksonTester<RpcMethod> tester;
 

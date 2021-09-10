@@ -1,22 +1,19 @@
+webprotege:
+  reply-channel: ${spring.application.name}-replies
+
 server:
   port: 8072
 
 spring:
   application:
     name: webprotege-gwt-api-gateway
-
-  cloud:
-    stream:
-      bindings:
-
-        sending-out-0:
-          destination: api-calls
-          content-type: application/json
-
-        replyHandler-in-0:
-          destination: foobarman
-          content-type: application/json
-          group: api-call-replies
+  kafka:
+    consumer:
+      group-id: ${spring.application.name}
+      auto-offset-reset: earliest
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.StringOrBytesSerializer
+      key-serializer: org.springframework.kafka.support.serializer.StringOrBytesSerializer
 
 
   security:
