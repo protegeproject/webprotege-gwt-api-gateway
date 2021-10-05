@@ -2,7 +2,7 @@ webprotege:
   reply-channel: ${spring.application.name}-replies
 
 server:
-  port: 8072
+  port: 7777
 
 spring:
   application:
