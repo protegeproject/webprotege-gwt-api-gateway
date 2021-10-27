@@ -8,11 +8,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * Stanford Center for Biomedical Informatics Research
  * 2021-07-21
  */
-public record RpcRequest(RpcMethod method, ObjectNode parameters) {
+public record RpcRequest(RpcMethod method, ObjectNode params) {
 
     public RpcRequest {
-        if(parameters == null) {
-            parameters = new ObjectNode(new JsonNodeFactory(true));
+        if(params == null) {
+            params = new ObjectNode(new JsonNodeFactory(true));
         }
     }
 

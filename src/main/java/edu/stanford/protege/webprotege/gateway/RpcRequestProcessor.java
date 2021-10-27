@@ -153,7 +153,7 @@ public class RpcRequestProcessor {
 
     private String writePayloadForRequest(RpcRequest request) {
         try {
-            return objectMapper.writer().writeValueAsString(request.parameters());
+            return objectMapper.writer().writeValueAsString(request.params());
         } catch (JsonProcessingException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }

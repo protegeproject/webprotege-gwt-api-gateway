@@ -34,7 +34,7 @@ class RpcRequest_Test {
         var rpcRequest = new RpcRequest(new RpcMethod(METHOD_NAME), null);
         var json = tester.write(rpcRequest);
         assertThat(json).hasJsonPath("$.method", METHOD_NAME);
-        assertThat(json).hasEmptyJsonPathValue("$.parameters");
+        assertThat(json).hasEmptyJsonPathValue("$.params");
     }
 
     @Test
@@ -44,7 +44,7 @@ class RpcRequest_Test {
         var rpcRequest = new RpcRequest(new RpcMethod(METHOD_NAME), parameters);
         var json = tester.write(rpcRequest);
         assertThat(json).hasJsonPath("$.method", METHOD_NAME);
-        assertThat(json).hasJsonPath("$.parameters.x", "y");
+        assertThat(json).hasJsonPath("$.params.x", "y");
     }
 
     @Test
@@ -59,11 +59,11 @@ class RpcRequest_Test {
     @Test
     void shouldDeserializeRpcRequestWithParameters() throws IOException {
         var json = """
-                {"method":"TheMethod","parameters":{"x":"y"}}
+                {"method":"TheMethod","params":{"x":"y"}}
                 """;
         var parsed = tester.parse(json);
         assertThat(parsed.getObject().methodName()).isEqualTo(METHOD_NAME);
-        var parameters = parsed.getObject().parameters();
+        var parameters = parsed.getObject().params();
         assertThat(parameters.get("x").asText()).isEqualTo("y");
     }
 }
