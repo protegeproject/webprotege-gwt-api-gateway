@@ -15,19 +15,8 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.StringOrBytesSerializer
       key-serializer: org.springframework.kafka.support.serializer.StringOrBytesSerializer
 
-
   security:
     oauth2:
-      client:
-        provider:
-          keycloak:
-            token-uri: http://localhost:8080/auth/realms/webprotege-realm/protocol/openid-connect/token
-            authorization-uri: http://localhost:8080/auth/realms/webprotege-realm/protocol/openid-connect/auth
-            userinfo-uri: http://localhost:8080/auth/realms/webprotege-realm/protocol/openid-connect/userinfo
-            user-name-attribute: preferred_username
-        registration:
-          keycloak:
-            provider: keycloak
-            client-id: webprotege
-            authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/keycloak"
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/auth/realms/webprotege
