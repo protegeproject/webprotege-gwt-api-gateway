@@ -10,6 +10,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * Matthew Horridge
  * Stanford Center for Biomedical Informatics Research
@@ -30,6 +32,14 @@ public class GatewayController {
         var accessToken = principal.getTokenValue();
         var userId = principal.getClaimAsString("preferred_username");
         var result = rpcRequestProcessor.processRequest(request, accessToken, new UserId(userId));
+        try {
+            result.get();
+            System.out.println(result);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
         return Mono.fromFuture(result);
     }
 

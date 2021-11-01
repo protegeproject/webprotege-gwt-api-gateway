@@ -19,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @AutoConfigureJsonTesters
 class RpcResponse_Test {
 
+    private static final String THEMETHOD = "themethod";
+
     @Autowired
     private JacksonTester<RpcResponse> tester;
 
@@ -27,9 +29,10 @@ class RpcResponse_Test {
         var correlationId = UUID.randomUUID().toString();
         var result = new HashMap<String, Object>();
         result.put("x", "y");
-        var response = new RpcResponse(null,
+        var response = new RpcResponse(THEMETHOD, null,
                                        result);
         var json = tester.write(response);
+        assertThat(json).hasJsonPath("$.method", THEMETHOD);
         assertThat(json).hasJsonPath("$.result.x", "y");
         assertThat(json).hasEmptyJsonPathValue("$.error");
     }
@@ -41,9 +44,11 @@ class RpcResponse_Test {
         var errorMessage = "Error message";
         var code = 33;
         var error = new RpcError(code, errorMessage, errorData);
-        var response = new RpcResponse(error,
+        var response = new RpcResponse(THEMETHOD,
+                                       error,
                                        null);
         var json = tester.write(response);
+        assertThat(json).hasJsonPath("$.method", THEMETHOD);
         assertThat(json).hasJsonPath("$.error.code", code);
         assertThat(json).hasJsonPath("$.error.message", errorMessage);
         assertThat(json).hasJsonPath("$.error.data.x", "y");
@@ -53,14 +58,14 @@ class RpcResponse_Test {
     @Test
     void shouldNotAllowResultAndError() {
         assertThrows(IllegalArgumentException.class, () -> {
-           new RpcResponse(new RpcError(33, "", emptyMap()), emptyMap());
+           new RpcResponse(THEMETHOD, new RpcError(33, "", emptyMap()), emptyMap());
         });
     }
 
     @Test
     void shouldNotAllowNullResultAndNullError() {
         assertThrows(IllegalArgumentException.class, () -> {
-            new RpcResponse(null, null);
+            new RpcResponse(THEMETHOD, null, null);
         });
     }
 }

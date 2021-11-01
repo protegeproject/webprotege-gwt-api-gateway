@@ -13,7 +13,7 @@ import java.util.Optional;
  * Stanford Center for Biomedical Informatics Research
  * 2021-07-21
  */
-public record RpcResponse(@Nullable RpcError error, @Nullable Map<String, Object> result) {
+public record RpcResponse(String method, @Nullable RpcError error, @Nullable Map<String, Object> result) {
 
     public RpcResponse {
         if(error == null) {
@@ -29,12 +29,12 @@ public record RpcResponse(@Nullable RpcError error, @Nullable Map<String, Object
     }
 
     @Nonnull
-    public static RpcResponse forResult(@Nonnull Map<String, Object> result) {
-        return new RpcResponse(null, result);
+    public static RpcResponse forResult(String method, @Nonnull Map<String, Object> result) {
+        return new RpcResponse(method, null, result);
     }
 
     @Nonnull
-    public static RpcResponse forError(@Nonnull RpcError rpcError) {
-        return new RpcResponse(rpcError, null);
+    public static RpcResponse forError(String method, @Nonnull RpcError rpcError) {
+        return new RpcResponse(method, rpcError, null);
     }
 }

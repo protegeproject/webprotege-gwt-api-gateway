@@ -68,31 +68,32 @@ public class RpcRequestProcessor {
 
             return reply.<RpcResponse>handleAsync((responseMessage, error) -> {
                 if(error != null) {
-                    return createErrorResponse(error);
+                    return createErrorResponse(request.methodName(), error);
                 }
                 var errorStatus = extractErrorStatus(responseMessage);
                 if(errorStatus.isPresent()) {
-                    return createRpcResponse(errorStatus.get());
+                    return createRpcResponse(request.methodName(), errorStatus.get());
                 }
                 var replyPayload = (String) responseMessage.getPayload();
                 var result = parseResultFromResponseMessagePayload(replyPayload);
-                return RpcResponse.forResult(result);
+                return RpcResponse.forResult(request.methodName(), result);
             });
         } catch (Exception e) {
             // Note: Catches InterruptedException
-            return createRpcResponseFuture(HttpStatus.INTERNAL_SERVER_ERROR);
+            return createRpcResponseFuture(request.methodName(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    private static CompletableFuture<RpcResponse> createRpcResponseFuture(HttpStatus httpStatus) {
+    private static CompletableFuture<RpcResponse> createRpcResponseFuture(String method, HttpStatus httpStatus) {
         var responseFuture = new CompletableFuture<RpcResponse>();
-        RpcResponse response = createRpcResponse(httpStatus);
+        RpcResponse response = createRpcResponse(method, httpStatus);
         responseFuture.complete(response);
         return responseFuture;
     }
 
-    private static RpcResponse createRpcResponse(HttpStatus httpStatus) {
-        return new RpcResponse(new RpcError(httpStatus.value(),
+    private static RpcResponse createRpcResponse(String method, HttpStatus httpStatus) {
+        return new RpcResponse(method,
+                               new RpcError(httpStatus.value(),
                                             HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), Collections.emptyMap()),
                                null);
     }
@@ -138,16 +139,16 @@ public class RpcRequestProcessor {
                                 .build();
     }
 
-    private RpcResponse createErrorResponse(Throwable e) {
+    private RpcResponse createErrorResponse(String method, Throwable e) {
         if (e instanceof CommandExecutionException) {
             var status = ((CommandExecutionException) e).getStatus();
-            return RpcResponse.forError(new RpcError(status.value(), status.getReasonPhrase(), Collections.emptyMap()));
+            return RpcResponse.forError(method, new RpcError(status.value(), status.getReasonPhrase(), Collections.emptyMap()));
         }
         else if(e instanceof KafkaReplyTimeoutException) {
-            return createRpcResponse(HttpStatus.GATEWAY_TIMEOUT);
+            return createRpcResponse(method, HttpStatus.GATEWAY_TIMEOUT);
         }
         else {
-            return createRpcResponse(HttpStatus.INTERNAL_SERVER_ERROR);
+            return createRpcResponse(method, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
