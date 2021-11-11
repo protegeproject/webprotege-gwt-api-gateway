@@ -10,7 +10,7 @@
     </parent>
     <groupId>edu.stanford.protege</groupId>
     <artifactId>webprotege-gwt-api-gateway</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <name>webprotege-gwt-api-gateway</name>
     <description>The API Gateway for the WebProtégé GWT User Interface</description>
     <properties>
@@ -24,7 +24,7 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
-    
+
     <dependencies>
 
         <dependency>
