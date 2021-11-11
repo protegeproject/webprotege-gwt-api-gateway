@@ -35,7 +35,7 @@
         <dependency>
             <groupId>edu.stanford.protege</groupId>
             <artifactId>webprotege-ipc</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>0.9.0</version>
         </dependency>
 
         <dependency>
@@ -67,17 +67,6 @@
             <version>2.2.6.RELEASE</version>
         </dependency>
     </dependencies>
-<!--    <dependencyManagement>-->
-<!--        <dependencies>-->
-<!--            <dependency>-->
-<!--                <groupId>org.keycloak.bom</groupId>-->
-<!--                <artifactId>keycloak-adapter-bom</artifactId>-->
-<!--                <version>14.0.0</version>-->
-<!--                <type>pom</type>-->
-<!--                <scope>import</scope>-->
-<!--            </dependency>-->
-<!--        </dependencies>-->
-<!--    </dependencyManagement>-->
 
     <build>
         <plugins>
