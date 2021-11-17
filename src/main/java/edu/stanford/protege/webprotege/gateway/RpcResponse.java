@@ -39,6 +39,6 @@ public record RpcResponse(String method, @Nullable RpcError error, @Nullable Map
 
     @Nonnull
     public static RpcResponse forError(String method, HttpStatus status) {
-        return RpcResponse.forError(method, new RpcError(status.value(), status.getReasonPhrase(), Collections.emptyMap()));
+        return RpcResponse.forError(method, RpcError.forStatus(status));
     }
 }

@@ -1,5 +1,8 @@
 package edu.stanford.protege.webprotege.gateway;
 
+import org.springframework.http.HttpStatus;
+
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -10,4 +13,8 @@ import java.util.Map;
 public record RpcError(int code,
                        String message,
                        Map<String, Object> data) {
+
+    public static RpcError forStatus(HttpStatus status) {
+        return new RpcError(status.value(), status.getReasonPhrase(), Collections.emptyMap());
+    }
 }
