@@ -2,7 +2,6 @@ package edu.stanford.protege.webprotege.gateway;
 
 import org.springframework.kafka.requestreply.ReplyingKafkaTemplate;
 import org.springframework.messaging.Message;
-import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;

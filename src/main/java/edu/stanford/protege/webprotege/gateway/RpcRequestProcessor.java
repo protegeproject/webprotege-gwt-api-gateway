@@ -42,7 +42,7 @@ public class RpcRequestProcessor {
 
     public RpcRequestProcessor(MessageHandler messageHandler,
                                ObjectMapper objectMapper,
-                               @Value("${webprotege.reply-channel}") String replyChannel, Duration replyTimeout) {
+                               @Value("${webprotege.gateway.reply-channel}") String replyChannel, Duration replyTimeout) {
         this.messageHandler = messageHandler;
         this.objectMapper = objectMapper;
         this.replyChannel = replyChannel;
@@ -66,7 +66,7 @@ public class RpcRequestProcessor {
             var requestMessage = createRequestMessage(request, accessToken, userId, payload);
             var reply = messageHandler.sendAndReceive(requestMessage, replyTimeout);
 
-            return reply.<RpcResponse>handleAsync((responseMessage, error) -> {
+            return reply.handleAsync((responseMessage, error) -> {
                 if(error != null) {
                     return createErrorResponse(request.methodName(), error);
                 }
@@ -94,7 +94,7 @@ public class RpcRequestProcessor {
     private static RpcResponse createRpcResponse(String method, HttpStatus httpStatus) {
         return new RpcResponse(method,
                                new RpcError(httpStatus.value(),
-                                            HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), Collections.emptyMap()),
+                                            httpStatus.getReasonPhrase(), Collections.emptyMap()),
                                null);
     }
 

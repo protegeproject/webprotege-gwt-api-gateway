@@ -1,12 +1,11 @@
 package edu.stanford.protege.webprotege.gateway;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Matthew Horridge
@@ -36,5 +35,10 @@ public record RpcResponse(String method, @Nullable RpcError error, @Nullable Map
     @Nonnull
     public static RpcResponse forError(String method, @Nonnull RpcError rpcError) {
         return new RpcResponse(method, rpcError, null);
+    }
+
+    @Nonnull
+    public static RpcResponse forError(String method, HttpStatus status) {
+        return RpcResponse.forError(method, new RpcError(status.value(), status.getReasonPhrase(), Collections.emptyMap()));
     }
 }

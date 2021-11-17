@@ -1,6 +1,3 @@
-webprotege:
-  reply-channel: ${spring.application.name}-replies
-
 server:
   port: 7777
 
@@ -20,3 +17,8 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8180/auth/realms/webprotege
+
+webprotege:
+  gateway:
+    reply-channel: ${spring.application.name}-replies
+    timeout: 600000 # Ten minutes

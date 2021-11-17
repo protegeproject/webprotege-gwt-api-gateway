@@ -7,6 +7,8 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -20,10 +22,12 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+@EnableConfigurationProperties
+@ConfigurationPropertiesScan
 @SpringBootApplication
 public class WebprotegeGwtApiGatewayApplication {
 
-	@Value("${webprotege.reply-channel}")
+	@Value("${webprotege.gateway.reply-channel}")
 	private String replyTopic;
 
 	@Value("${spring.application.name}")
@@ -36,7 +40,9 @@ public class WebprotegeGwtApiGatewayApplication {
 	@Bean
 	ReplyingKafkaTemplate<String, String, String> replyingKafkaTemplate(ProducerFactory<String, String> producerFactory,
 																		ConcurrentMessageListenerContainer<String, String> messageContainer) {
-		return new ReplyingKafkaTemplate<>(producerFactory, messageContainer);
+		var template = new ReplyingKafkaTemplate<>(producerFactory, messageContainer);
+		template.setDefaultReplyTimeout(Duration.ofMinutes(1));
+		return template;
 	}
 
 	@Bean
