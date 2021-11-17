@@ -11,7 +11,25 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConfigurationProperties(prefix = "webprotege.gateway")
-@ConstructorBinding
-public record GatewayProperties(long timeout, String replyChannel) {
+public class GatewayProperties {
 
+    private long timeout;
+
+    private String replyChannel;
+
+    public long getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
+    }
+
+    public String getReplyChannel() {
+        return replyChannel;
+    }
+
+    public void setReplyChannel(String replyChannel) {
+        this.replyChannel = replyChannel;
+    }
 }

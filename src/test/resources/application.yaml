@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: webprotege-gwt-api-gateway
+    name: test-webprotege-gwt-api-gateway
   kafka:
     consumer:
       group-id: ${spring.application.name}-consumer-group
