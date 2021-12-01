@@ -33,6 +33,9 @@ public class WebprotegeGwtApiGatewayApplication {
 	@Value("${spring.application.name}")
 	private String groupId;
 
+	@Value("${spring.kafka.producer.bootstrap-servers}")
+	private String bootstrapServers;
+
 	public static void main(String[] args) {
 		SpringApplication.run(WebprotegeGwtApiGatewayApplication.class, args);
 	}
@@ -65,7 +68,7 @@ public class WebprotegeGwtApiGatewayApplication {
 	@Bean
 	ProducerFactory<String, String> producerFactory() {
 		Map<String, Object> props = new HashMap<>();
-		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 		props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
 		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
 		props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
