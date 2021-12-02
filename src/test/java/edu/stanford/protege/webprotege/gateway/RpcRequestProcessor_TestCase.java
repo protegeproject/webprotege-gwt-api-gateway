@@ -10,8 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.requestreply.KafkaReplyTimeoutException;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -28,6 +30,8 @@ import static org.mockito.Mockito.when;
  * 2021-09-10
  */
 @SpringBootTest
+@DirtiesContext
+@EmbeddedKafka(partitions = 1, brokerProperties = { "listeners=PLAINTEXT://localhost:9092", "port=9092" })
 public class RpcRequestProcessor_TestCase {
 
     private static final String STATUS_CODE_300_ERROR = """

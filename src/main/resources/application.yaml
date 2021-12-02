@@ -12,12 +12,6 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.StringOrBytesSerializer
       key-serializer: org.springframework.kafka.support.serializer.StringOrBytesSerializer
 
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8180/auth/realms/webprotege
-
 webprotege:
   gateway:
     reply-channel: ${spring.application.name}-replies
