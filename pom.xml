@@ -14,7 +14,7 @@
     <name>webprotege-gwt-api-gateway</name>
     <description>The API Gateway for the WebProtégé GWT User Interface</description>
     <properties>
-        <java.version>16</java.version>
+        <java.version>17</java.version>
         <spring-cloud.version>2020.0.3</spring-cloud.version>
     </properties>
 

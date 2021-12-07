@@ -2,9 +2,10 @@ package edu.stanford.protege.webprotege.gateway;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-//import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
+import org.springframework.context.annotation.Import;
 
-@SpringBootTest
+@SpringBootTest(classes = WebprotegeGwtApiGatewayApplication.class)
+@Import(MockJwtDecoderConfiguration.class)
 class WebprotegeGwtApiGatewayApplicationTests {
 
 	@Test

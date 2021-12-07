@@ -6,13 +6,15 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.context.annotation.Import;
 
 import java.io.IOException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@SpringBootTest
+@SpringBootTest(classes = WebprotegeGwtApiGatewayApplication.class)
+@Import(MockJwtDecoderConfiguration.class)
 @EnableConfigurationProperties(value = GatewayProperties.class)
 @AutoConfigureJsonTesters
 class RpcMethod_Test {

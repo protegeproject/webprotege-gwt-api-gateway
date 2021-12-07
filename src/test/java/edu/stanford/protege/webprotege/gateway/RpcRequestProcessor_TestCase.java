@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.requestreply.KafkaReplyTimeoutException;
 import org.springframework.kafka.test.context.EmbeddedKafka;
@@ -30,6 +31,7 @@ import static org.mockito.Mockito.when;
  * 2021-09-10
  */
 @SpringBootTest
+@Import(MockJwtDecoderConfiguration.class)
 @DirtiesContext
 @EmbeddedKafka(partitions = 1, brokerProperties = { "listeners=PLAINTEXT://localhost:9092", "port=9092" })
 public class RpcRequestProcessor_TestCase {
