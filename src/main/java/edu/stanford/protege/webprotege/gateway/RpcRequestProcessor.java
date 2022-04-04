@@ -7,21 +7,14 @@ import edu.stanford.protege.webprotege.ipc.CommandExecutionException;
 import edu.stanford.protege.webprotege.ipc.Headers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.kafka.requestreply.KafkaReplyTimeoutException;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Matthew Horridge
@@ -32,21 +25,14 @@ public class RpcRequestProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(RpcRequestProcessor.class);
 
-    private final MessageHandler messageHandler;
+    private final Messenger messenger;
 
     private final ObjectMapper objectMapper;
 
-    private final String replyChannel;
-
-    private final Duration replyTimeout;
-
-    public RpcRequestProcessor(MessageHandler messageHandler,
-                               ObjectMapper objectMapper,
-                               @Value("${webprotege.gateway.reply-channel}") String replyChannel, Duration replyTimeout) {
-        this.messageHandler = messageHandler;
+    public RpcRequestProcessor(Messenger messenger,
+                               ObjectMapper objectMapper) {
+        this.messenger = messenger;
         this.objectMapper = objectMapper;
-        this.replyChannel = replyChannel;
-        this.replyTimeout = replyTimeout;
     }
 
     /**
@@ -63,19 +49,25 @@ public class RpcRequestProcessor {
                                                          UserId userId) {
         try {
             var payload = writePayloadForRequest(request);
-            var requestMessage = createRequestMessage(request, accessToken, userId, payload);
-            var reply = messageHandler.sendAndReceive(requestMessage, replyTimeout);
+            var reply = messenger.sendAndReceive(request.methodName(),
+                                                 payload, userId);
 
-            return reply.handleAsync((responseMessage, error) -> {
+            return reply.handleAsync((replyMsg, error) -> {
                 if(error != null) {
                     return createErrorResponse(request.methodName(), error);
                 }
-                var errorStatus = extractErrorStatus(responseMessage);
-                if(errorStatus.isPresent()) {
-                    return createRpcResponse(request.methodName(), errorStatus.get());
+                var errorHeader = replyMsg.headers().get(Headers.ERROR);
+                if (errorHeader != null) {
+                    try {
+                        var executionException = objectMapper.readValue(errorHeader, CommandExecutionException.class);
+                        return createRpcResponse(request.methodName(), executionException.getStatus());
+                    } catch (JsonProcessingException e) {
+                        logger.error("Error parsing error response into ", e);
+                        return createRpcResponse(request.methodName(), HttpStatus.INTERNAL_SERVER_ERROR);
+                    }
                 }
-                var replyPayload = (String) responseMessage.getPayload();
-                var result = parseResultFromResponseMessagePayload(replyPayload);
+
+                var result = parseResultFromResponseMessagePayload(replyMsg.payload());
                 return RpcResponse.forResult(request.methodName(), result);
             });
         } catch (Exception e) {
@@ -99,44 +91,15 @@ public class RpcRequestProcessor {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> parseResultFromResponseMessagePayload(String replyPayload) {
+    private Map<String, Object> parseResultFromResponseMessagePayload(byte [] replyPayload) {
         try {
+            if(replyPayload.length == 0) {
+                return Map.of();
+            }
             return (Map<String, Object>) objectMapper.readValue(replyPayload, Map.class);
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error deserializing payload from response message", e);
         }
-    }
-
-    /**
-     * Check for an error header and deserialize it if it is present.  If an error is occurred when deserializing
-     * the error header value then a {@link ResponseStatusException} is thrown with an error code of 500 (Internal
-     * Server Error) and the problem is logged
-     * @param message The message that could contain an error header
-     * @throws ResponseStatusException if an error header is present
-     */
-    private Optional<HttpStatus> extractErrorStatus(Message<?> message) {
-        var errorHeader = (byte [])  message.getHeaders().get(Headers.ERROR);
-        if (errorHeader == null) {
-            return Optional.empty();
-        }
-        // Deserialize the error
-        try {
-            var error = objectMapper.readValue(errorHeader, CommandExecutionException.class);
-            return Optional.of(error.getStatus());
-        } catch (IOException e) {
-            logger.error("Error deserializing CommandExecutionException from error header in message", e);
-            return Optional.of(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private Message<String> createRequestMessage(RpcRequest request, String accessToken, UserId userId, String payload) {
-        return MessageBuilder.withPayload(payload)
-                                .setHeader(KafkaHeaders.TOPIC, request.methodName())
-                                .setHeader(KafkaHeaders.REPLY_TOPIC, replyChannel)
-                                .setHeader(KafkaHeaders.CORRELATION_ID, createCorrelationId())
-                                                                .setHeader(Headers.ACCESS_TOKEN, accessToken)
-                                .setHeader(Headers.USER_ID, userId.id())
-                                .build();
     }
 
     private RpcResponse createErrorResponse(String method, Throwable e) {
@@ -144,7 +107,7 @@ public class RpcRequestProcessor {
             var status = ((CommandExecutionException) e).getStatus();
             return RpcResponse.forError(method, new RpcError(status.value(), status.getReasonPhrase(), Collections.emptyMap()));
         }
-        else if(e instanceof KafkaReplyTimeoutException) {
+        else if(e instanceof TimeoutException) {
             return createRpcResponse(method, HttpStatus.GATEWAY_TIMEOUT);
         }
         else {
@@ -152,15 +115,11 @@ public class RpcRequestProcessor {
         }
     }
 
-    private String writePayloadForRequest(RpcRequest request) {
+    private byte [] writePayloadForRequest(RpcRequest request) {
         try {
-            return objectMapper.writer().writeValueAsString(request.params());
+            return objectMapper.writer().writeValueAsBytes(request.params());
         } catch (JsonProcessingException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
-    }
-
-    private static String createCorrelationId() {
-        return UUID.randomUUID().toString();
     }
 }

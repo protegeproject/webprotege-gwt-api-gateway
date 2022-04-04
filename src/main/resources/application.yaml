@@ -4,13 +4,6 @@ server:
 spring:
   application:
     name: webprotege-gwt-api-gateway
-  kafka:
-    consumer:
-      group-id: ${spring.application.name}-consumer-group
-      auto-offset-reset: earliest
-    producer:
-      value-serializer: org.springframework.kafka.support.serializer.StringOrBytesSerializer
-      key-serializer: org.springframework.kafka.support.serializer.StringOrBytesSerializer
 
 webprotege:
   gateway:

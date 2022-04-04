@@ -23,8 +23,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .disable()
             .formLogin(AbstractHttpConfigurer::disable)
             .csrf(AbstractHttpConfigurer::disable)
-            .authorizeRequests(authz -> authz.antMatchers(HttpMethod.POST, "/api/execute").authenticated())
-            .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
-            .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+//            .authorizeRequests(authz -> authz.antMatchers(HttpMethod.POST, "/api/execute").authenticated())
+            .authorizeRequests(authz -> authz.antMatchers(HttpMethod.POST, "/api/execute").permitAll());
+//            .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
+//            .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
     }
 }

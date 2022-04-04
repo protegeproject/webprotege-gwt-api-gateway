@@ -1,26 +1,17 @@
 package edu.stanford.protege.webprotege.gateway;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
+import edu.stanford.protege.webprotege.ipc.pulsar.PulsarProducersManager;
+import org.apache.pulsar.client.api.PulsarClient;
+import org.apache.pulsar.client.api.PulsarClientException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.core.ConsumerFactory;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.ProducerFactory;
-import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
-import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.requestreply.ReplyingKafkaTemplate;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 
 @EnableConfigurationProperties
 @ConfigurationPropertiesScan
@@ -30,59 +21,38 @@ public class WebprotegeGwtApiGatewayApplication {
 	@Value("${webprotege.gateway.reply-channel}")
 	private String replyTopic;
 
-	@Value("${spring.application.name}")
-	private String groupId;
+	@Value("${webprotege.pulsar.serviceUrl}")
+	private String pulsarServiceUrl;
 
-	@Value("${spring.kafka.producer.bootstrap-servers}")
-	private String bootstrapServers;
+	@Value("${spring.application.name}")
+	private String applicationName;
+
 
 	public static void main(String[] args) {
 		SpringApplication.run(WebprotegeGwtApiGatewayApplication.class, args);
 	}
 
 	@Bean
-	ReplyingKafkaTemplate<String, String, String> replyingKafkaTemplate(ProducerFactory<String, String> producerFactory,
-																		ConcurrentMessageListenerContainer<String, String> messageContainer) {
-		var template = new ReplyingKafkaTemplate<>(producerFactory, messageContainer);
-		template.setDefaultReplyTimeout(Duration.ofMinutes(1));
-		return template;
+	PulsarClient pulsarClient() throws PulsarClientException {
+		return PulsarClient.builder()
+						   .serviceUrl(pulsarServiceUrl).build();
 	}
 
 	@Bean
-	ConcurrentMessageListenerContainer<String, String> concurrentMessageListenerContainer(ConsumerFactory<? super String, ? super String> consumerFactory,
-																						  ContainerProperties containerProperties) {
-		return new ConcurrentMessageListenerContainer<>(consumerFactory,
-														containerProperties);
+	PulsarProducersManager producersManager(PulsarClient pulsarClient) {
+		return new PulsarProducersManager(pulsarClient, applicationName);
 	}
 
 	@Bean
-	ContainerProperties consumerProperties() {
-		return new ContainerProperties(replyTopic);
+	RpcRequestProcessor rpcRequestProcessor(ObjectMapper objectMapper,
+											Messenger messenger) {
+		return new RpcRequestProcessor(messenger, objectMapper);
 	}
 
 	@Bean
-	ConcurrentKafkaListenerContainerFactory<String, String> containerFactory() {
-		return new ConcurrentKafkaListenerContainerFactory<>();
-	}
-
-	@Bean
-	ProducerFactory<String, String> producerFactory() {
-		Map<String, Object> props = new HashMap<>();
-		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-		props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-		props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-		props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-		return new DefaultKafkaProducerFactory<>(props, new StringSerializer(), new StringSerializer());
-	}
-
-	@Bean
-	RpcRequestProcessor messageProcessor(ObjectMapper objectMapper, MessageHandler messageHandler) {
-		return new RpcRequestProcessor(messageHandler, objectMapper, replyTopic, Duration.ofSeconds(60));
-	}
-
-	@Bean
-	MessageHandler messageHandler(ReplyingKafkaTemplate<String, String, String> replyingKafkaTemplate) {
-		return new MessageHandler(replyingKafkaTemplate);
+	MessengerPulsarImpl messageHandler(PulsarClient pulsarClient,
+									   PulsarProducersManager producersManager,
+									   ObjectMapper objectMapper) {
+		return new MessengerPulsarImpl(pulsarClient, producersManager, objectMapper);
 	}
 }
