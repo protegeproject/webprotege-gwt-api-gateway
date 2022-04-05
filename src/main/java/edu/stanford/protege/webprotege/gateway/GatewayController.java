@@ -3,6 +3,7 @@ package edu.stanford.protege.webprotege.gateway;
 import edu.stanford.protege.webprotege.common.UserId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -22,6 +23,9 @@ import java.util.concurrent.TimeoutException;
 @RestController
 public class GatewayController {
 
+    @Value("${webprotege.apigateway.forceUserName:}")
+    private String forceUserName;
+
     private final Logger logger = LoggerFactory.getLogger(GatewayController.class);
 
     private final RpcRequestProcessor rpcRequestProcessor;
@@ -32,9 +36,19 @@ public class GatewayController {
 
     @PostMapping(path = "/api/execute", consumes = "application/json")
     public RpcResponse execute(@RequestBody RpcRequest request,
-                                     @AuthenticationPrincipal Jwt principal) {
-        var accessToken = principal.getTokenValue();
-        var userId = principal.getClaimAsString("preferred_username");
+                               @AuthenticationPrincipal Jwt principal) {
+        // Temp workaround for keycloak setup issues
+        final String accessToken;
+        final String userId;
+        if (!forceUserName.isEmpty()) {
+            accessToken = "BLANK";
+            userId = forceUserName;
+            logger.warn("Using hard coded UserId: {}", userId);
+        }
+        else {
+            accessToken = principal.getTokenValue();
+            userId = principal.getClaimAsString("preferred_username");
+        }
         var result = rpcRequestProcessor.processRequest(request, accessToken, new UserId(userId));
         try {
             return result.get(10, TimeUnit.MINUTES);
