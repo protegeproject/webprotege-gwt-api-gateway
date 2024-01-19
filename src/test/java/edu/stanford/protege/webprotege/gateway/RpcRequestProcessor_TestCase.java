@@ -7,10 +7,7 @@ import edu.stanford.protege.webprotege.ipc.pulsar.PulsarProducersManager;
 import org.apache.pulsar.client.api.PulsarClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,15 +55,6 @@ public class RpcRequestProcessor_TestCase {
 
     private Supplier<Msg> replyMessageSupplier = () -> null;
 
-    @Autowired
-    private PulsarProducersManager producersManager;
-
-    @Autowired
-    private PulsarClient pulsarClient;
-
-    @Value("${spring.application.name}")
-    private String applicationName;
-
     @Mock
     private Messenger messenger;
 
@@ -88,7 +76,7 @@ public class RpcRequestProcessor_TestCase {
 
     @Test
     void shouldReturnInternalServerErrorForBadErrorHeaderValue() {
-        var reply = Msg.withHeader(Headers.ERROR, "An value that won't parse");
+        var reply = Msg.withHeader(Headers.ERROR, "A value that won't parse");
         replyMessageSupplier = () -> reply;
         var response = processRequest();
         assertThat(response.error()).isNotNull();
