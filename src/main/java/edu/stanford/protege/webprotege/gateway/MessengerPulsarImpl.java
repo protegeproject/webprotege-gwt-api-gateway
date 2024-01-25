@@ -2,7 +2,6 @@ package edu.stanford.protege.webprotege.gateway;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.stanford.protege.webprotege.common.UserId;
-import edu.stanford.protege.webprotege.ipc.CommandExecutionException;
 import edu.stanford.protege.webprotege.ipc.Headers;
 import edu.stanford.protege.webprotege.ipc.pulsar.PulsarProducersManager;
 import org.apache.pulsar.client.api.*;
