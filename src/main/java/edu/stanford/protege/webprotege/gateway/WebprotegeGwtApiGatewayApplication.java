@@ -67,7 +67,8 @@ public class WebprotegeGwtApiGatewayApplication implements CommandLineRunner {
 	@Bean
 	MessengerPulsarImpl messageHandler(PulsarClient pulsarClient,
 									   PulsarProducersManager producersManager,
-									   ObjectMapper objectMapper) {
-		return new MessengerPulsarImpl(pulsarClient, producersManager, objectMapper);
+									   ObjectMapper objectMapper,
+	 									GatewayProperties properties) {
+		return new MessengerPulsarImpl(pulsarClient, producersManager, objectMapper, properties);
 	}
 }

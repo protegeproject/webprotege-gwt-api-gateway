@@ -49,10 +49,11 @@ public class MessengerPulsarImpl implements Messenger {
 
 
     public MessengerPulsarImpl(PulsarClient pulsarClient,
-                               PulsarProducersManager producersManager, ObjectMapper objectMapper) {
+                               PulsarProducersManager producersManager, ObjectMapper objectMapper, GatewayProperties properties) {
         this.pulsarClient = pulsarClient;
         this.producersManager = producersManager;
         this.objectMapper = objectMapper;
+        this.replyChannel = properties.getReplyChannel();
     }
 
     /**
@@ -88,6 +89,7 @@ public class MessengerPulsarImpl implements Messenger {
     private synchronized Producer<byte[]> getProducer(String topicName) {
         ensureConsumerIsListeningForReplyMessage();
         var topicUrl = "persistent://" + tenant + "/" + COMMAND_REQUESTS + "/" + topicName;
+        logger.info("Setting topic url " + topicUrl);
         return producersManager.getProducer(topicUrl, builder -> builder.accessMode(ProducerAccessMode.Shared));
     }
 
@@ -96,7 +98,7 @@ public class MessengerPulsarImpl implements Messenger {
             if (consumer != null) {
                 return;
             }
-            var replyTopic = "persistent://" + tenant + "/webprotege-api-gateway/" + replyChannel;
+            var replyTopic = "persistent://" + tenant + "/command-responses/" + replyChannel;
 
             // Replies need to go to all instances of our application/service.  In other words we have a pub/sub
             // situation.  In this case we need unique subscription names with exclusive subscriptions for each
