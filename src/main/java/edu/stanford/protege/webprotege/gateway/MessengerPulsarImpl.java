@@ -60,16 +60,18 @@ public class MessengerPulsarImpl implements Messenger {
      * @return The reply message.
      */
     @Override
-    public CompletableFuture<Msg> sendAndReceive(String topicName, byte[] payload, UserId userId) {
+    public CompletableFuture<Msg> sendAndReceive(String topicName,String accessToken, byte[] payload, UserId userId) {
         try {
             var producer = getProducer(topicName);
             var correlationId = UUID.randomUUID().toString();
             var replyFuture = new CompletableFuture<Msg>();
+            logger.info("ALEX sendAndReceiveWith correlationId {} and payload {}",correlationId, new String(payload));
             replyHandlers.put(correlationId, replyFuture);
             var messageBuilder = producer.newMessage()
                                          .value(payload)
                                          .property(Headers.CORRELATION_ID, correlationId)
                                          .property(Headers.REPLY_CHANNEL, replyChannel)
+                                         .property(Headers.ACCESS_TOKEN, accessToken)
                                          .property(Headers.USER_ID, userId.value());
             // TODO: FIX THIS
             //                if (request instanceof ProjectRequest) {

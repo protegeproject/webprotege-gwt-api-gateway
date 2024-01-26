@@ -50,6 +50,7 @@ public class RpcRequestProcessor {
         try {
             var payload = writePayloadForRequest(request);
             var reply = messenger.sendAndReceive(request.methodName(),
+                                                 accessToken,
                                                  payload, userId);
 
             return reply.handleAsync((replyMsg, error) -> {
