@@ -65,6 +65,7 @@ public class MessengerPulsarImpl implements Messenger {
             var producer = getProducer(topicName);
             var correlationId = UUID.randomUUID().toString();
             var replyFuture = new CompletableFuture<Msg>();
+            logger.info("ALEX sendAndReceiveWith correlationId {} and payload {}",correlationId, new String(payload));
             replyHandlers.put(correlationId, replyFuture);
             var messageBuilder = producer.newMessage()
                                          .value(payload)
