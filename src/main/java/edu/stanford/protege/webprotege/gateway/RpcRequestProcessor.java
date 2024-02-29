@@ -7,6 +7,10 @@ import edu.stanford.protege.webprotege.ipc.CommandExecutionException;
 import edu.stanford.protege.webprotege.ipc.Headers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageBuilder;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -26,13 +30,19 @@ public class RpcRequestProcessor {
     private static final Logger logger = LoggerFactory.getLogger(RpcRequestProcessor.class);
 
     private final Messenger messenger;
+    private final RabbitTemplate rabbitTemplate;
 
     private final ObjectMapper objectMapper;
 
+    private final DirectExchange directExchange;
+
     public RpcRequestProcessor(Messenger messenger,
-                               ObjectMapper objectMapper) {
+                               ObjectMapper objectMapper,
+                               RabbitTemplate rabbitTemplate, DirectExchange directExchange) {
         this.messenger = messenger;
         this.objectMapper = objectMapper;
+        this.rabbitTemplate = rabbitTemplate;
+        this.directExchange = directExchange;
     }
 
     /**
@@ -49,7 +59,8 @@ public class RpcRequestProcessor {
                                                          UserId userId) {
         try {
             var payload = writePayloadForRequest(request);
-            var reply = messenger.sendAndReceive(request.methodName(),
+
+            var reply = messenger.sendAndReceive(request,
                                                  accessToken,
                                                  payload, userId);
 

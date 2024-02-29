@@ -3,14 +3,14 @@ package edu.stanford.protege.webprotege.gateway;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.stanford.protege.webprotege.common.UserId;
 import edu.stanford.protege.webprotege.ipc.Headers;
-import edu.stanford.protege.webprotege.ipc.pulsar.PulsarProducersManager;
-import org.apache.pulsar.client.api.PulsarClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.stubbing.Answer;
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 /**
  * Matthew Horridge
@@ -34,6 +34,7 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @Import(MockJwtDecoderConfiguration.class)
 @DirtiesContext
+@ExtendWith(IntegrationTestsExtension.class)
 public class RpcRequestProcessor_TestCase {
 
     private static final String STATUS_CODE_300_ERROR = """
@@ -58,11 +59,17 @@ public class RpcRequestProcessor_TestCase {
     @Mock
     private Messenger messenger;
 
+    @Mock
+    private RabbitTemplate rabbitTemplate;
+
+    @Mock
+    private DirectExchange directExchange;
+
     @BeforeEach
     void setUp() {
         when(messenger.sendAndReceive(any(), any(), any(), any()))
                 .thenAnswer((Answer<CompletableFuture<Msg>>) invocationOnMock -> CompletableFuture.completedFuture(replyMessageSupplier.get()));
-        processor = new RpcRequestProcessor(messenger, objectMapper);
+        processor = new RpcRequestProcessor(messenger, objectMapper, rabbitTemplate, directExchange);
     }
 
     @Test
@@ -85,7 +92,7 @@ public class RpcRequestProcessor_TestCase {
 
     @Test
     void shouldReturnGatewayTimeOutForMessageReplyTimeout() {
-        when(messenger.sendAndReceive(anyString(),anyString(), any(), any()))
+        when(messenger.sendAndReceive(any(),anyString(), any(), any()))
                 .thenReturn(CompletableFuture.failedFuture(new TimeoutException("Timeout")));
         var response = processRequest();
         assertThat(response.error()).isNotNull();
@@ -94,7 +101,7 @@ public class RpcRequestProcessor_TestCase {
 
     @Test
     void shouldHandleRuntimeExceptionThrownByMessageHandler() {
-        when(messenger.sendAndReceive(anyString(),anyString(), any(byte[].class), any()))
+        when(messenger.sendAndReceive(any(),anyString(), any(byte[].class), any()))
                 .thenThrow(new RuntimeException());
         var response = processRequest();
         assertThat(response.error()).isNotNull();

@@ -11,5 +11,5 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface Messenger {
 
-    CompletableFuture<Msg> sendAndReceive(String topicName, String accessToken, byte[] payload, UserId userId);
+    CompletableFuture<Msg> sendAndReceive(RpcRequest request, String accessToken, byte[] payload, UserId userId);
 }
