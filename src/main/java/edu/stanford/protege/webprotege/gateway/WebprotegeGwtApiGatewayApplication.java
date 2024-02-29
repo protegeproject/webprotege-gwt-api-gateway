@@ -6,6 +6,9 @@ import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.PulsarClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -13,8 +16,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-
-import java.time.Duration;
 
 @EnableConfigurationProperties
 @ConfigurationPropertiesScan
@@ -60,15 +61,18 @@ public class WebprotegeGwtApiGatewayApplication implements CommandLineRunner {
 
 	@Bean
 	RpcRequestProcessor rpcRequestProcessor(ObjectMapper objectMapper,
-											Messenger messenger) {
-		return new RpcRequestProcessor(messenger, objectMapper);
+											Messenger messenger,
+											RabbitTemplate rabbitTemplate,
+											DirectExchange directExchange) {
+		return new RpcRequestProcessor(messenger, objectMapper, rabbitTemplate, directExchange);
 	}
 
 	@Bean
 	MessengerPulsarImpl messageHandler(PulsarClient pulsarClient,
 									   PulsarProducersManager producersManager,
 									   ObjectMapper objectMapper,
-	 									GatewayProperties properties) {
-		return new MessengerPulsarImpl(pulsarClient, producersManager, objectMapper, properties);
+									   GatewayProperties properties,
+									   RabbitTemplate rabbitTemplate) {
+		return new MessengerPulsarImpl(pulsarClient, producersManager, objectMapper, properties, rabbitTemplate);
 	}
 }

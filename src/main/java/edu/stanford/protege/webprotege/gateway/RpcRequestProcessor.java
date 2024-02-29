@@ -7,8 +7,12 @@ import edu.stanford.protege.webprotege.ipc.CommandExecutionException;
 import edu.stanford.protege.webprotege.ipc.Headers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.MessageBuilder;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.amqp.core.Message;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -26,13 +30,35 @@ public class RpcRequestProcessor {
     private static final Logger logger = LoggerFactory.getLogger(RpcRequestProcessor.class);
 
     private final Messenger messenger;
+    private final RabbitTemplate rabbitTemplate;
 
     private final ObjectMapper objectMapper;
 
+    private final DirectExchange directExchange;
+
     public RpcRequestProcessor(Messenger messenger,
-                               ObjectMapper objectMapper) {
+                               ObjectMapper objectMapper,
+                               RabbitTemplate rabbitTemplate, DirectExchange directExchange) {
         this.messenger = messenger;
         this.objectMapper = objectMapper;
+        this.rabbitTemplate = rabbitTemplate;
+        this.directExchange = directExchange;
+    }
+
+
+    public RpcResponse processRequestRabbit(RpcRequest request,
+                                            String accessToken,
+                                            UserId userId) {
+        Message rabbitRequest = MessageBuilder.withBody(writePayloadForRequest(request)).build();
+        rabbitRequest.getMessageProperties().getHeaders().put(Headers.ACCESS_TOKEN, accessToken.toString());
+        rabbitRequest.getMessageProperties().getHeaders().put("webprotege_methodName", request.methodName());
+        rabbitRequest.getMessageProperties().getHeaders().put(Headers.USER_ID, userId.value());
+
+        Message response = rabbitTemplate.sendAndReceive(directExchange.getName(), request.methodName() ,rabbitRequest);
+
+        var result = parseResultFromResponseMessagePayload(response.getBody());
+
+        return RpcResponse.forResult(request.methodName(), result);
     }
 
     /**

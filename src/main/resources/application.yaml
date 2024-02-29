@@ -1,9 +1,18 @@
 server:
   port: 7777
-
+logging:
+  level:
+    root: DEBUG
 spring:
   application:
     name: webprotege-gwt-api-gateway
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+    publisher-confirm-type: correlated
+    publisher-returns: true
 
 webprotege:
   pulsar.tenant: webprotege
@@ -21,5 +30,3 @@ spring.security.oauth2:
       issuer-uri: http://webprotege-local.edu/auth/realms/webprotege
       user-name-attribute: preferred_username
   resourceserver.jwt.issuer-uri: http://webprotege-local.edu/auth/realms/webprotege
-
-

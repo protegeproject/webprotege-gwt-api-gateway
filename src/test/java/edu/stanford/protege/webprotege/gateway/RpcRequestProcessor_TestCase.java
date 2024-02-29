@@ -3,14 +3,14 @@ package edu.stanford.protege.webprotege.gateway;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.stanford.protege.webprotege.common.UserId;
 import edu.stanford.protege.webprotege.ipc.Headers;
-import edu.stanford.protege.webprotege.ipc.pulsar.PulsarProducersManager;
-import org.apache.pulsar.client.api.PulsarClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.stubbing.Answer;
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
@@ -58,11 +58,17 @@ public class RpcRequestProcessor_TestCase {
     @Mock
     private Messenger messenger;
 
+    @Mock
+    private RabbitTemplate rabbitTemplate;
+
+    @Mock
+    private DirectExchange directExchange;
+
     @BeforeEach
     void setUp() {
         when(messenger.sendAndReceive(any(), any(), any(), any()))
                 .thenAnswer((Answer<CompletableFuture<Msg>>) invocationOnMock -> CompletableFuture.completedFuture(replyMessageSupplier.get()));
-        processor = new RpcRequestProcessor(messenger, objectMapper);
+        processor = new RpcRequestProcessor(messenger, objectMapper, rabbitTemplate, directExchange);
     }
 
     @Test

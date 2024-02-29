@@ -7,9 +7,9 @@ import edu.stanford.protege.webprotege.ipc.pulsar.PulsarProducersManager;
 import org.apache.pulsar.client.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Map;
 import java.util.UUID;
@@ -43,16 +43,19 @@ public class MessengerPulsarImpl implements Messenger {
 
     private final ObjectMapper objectMapper;
 
+    private final RabbitTemplate rabbitTemplate;
+
     private Consumer<byte []> consumer;
 
 
 
     public MessengerPulsarImpl(PulsarClient pulsarClient,
-                               PulsarProducersManager producersManager, ObjectMapper objectMapper, GatewayProperties properties) {
+                               PulsarProducersManager producersManager, ObjectMapper objectMapper, GatewayProperties properties, RabbitTemplate rabbitTemplate) {
         this.pulsarClient = pulsarClient;
         this.producersManager = producersManager;
         this.objectMapper = objectMapper;
         this.replyChannel = properties.getReplyChannel();
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     /**

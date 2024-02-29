@@ -49,15 +49,13 @@ public class GatewayController {
             accessToken = principal.getTokenValue();
             userId = principal.getClaimAsString("preferred_username");
         }
-        var result = rpcRequestProcessor.processRequest(request, accessToken, new UserId(userId));
+      //  var result = rpcRequestProcessor.processRequest(request, accessToken, new UserId(userId));
         try {
-            return result.get(10, TimeUnit.MINUTES);
-        } catch (InterruptedException | ExecutionException e) {
+            return rpcRequestProcessor.processRequestRabbit(request, accessToken, new UserId(userId));
+        } catch (Exception e) {
             logger.error("Error while waiting for response to request", e);
             return RpcResponse.forError(request.methodName(), HttpStatus.INTERNAL_SERVER_ERROR);
-
-        } catch (TimeoutException e) {
-            return RpcResponse.forError(request.methodName(), HttpStatus.GATEWAY_TIMEOUT);
         }
+
     }
 }
