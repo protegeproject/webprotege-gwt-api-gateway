@@ -20,7 +20,7 @@ public class RabbitClientConfiguration {
 
     private final static Logger logger = LoggerFactory.getLogger(RabbitClientConfiguration.class);
 
-    public static final String RPC_QUEUE1 = "webprotege-rpc-queue";
+    public static final String RPC_QUEUE1 = "webprotege-api-gateway-queue";
     public static final String RPC_RESPONSE_QUEUE = "webprotege-api-gateway-response-queue";
 
     public static final String RPC_EXCHANGE = "webprotege-exchange";
@@ -58,7 +58,6 @@ public class RabbitClientConfiguration {
             channel.queueDeclare(RPC_RESPONSE_QUEUE,true,false, false,null);
 
             channel.queueBind(RPC_QUEUE1, RPC_EXCHANGE, "webprotege.api-gateway-response.queue");
-
         } catch (Exception e) {
             logger.error("Error ", e);
             throw new RuntimeException(e);
