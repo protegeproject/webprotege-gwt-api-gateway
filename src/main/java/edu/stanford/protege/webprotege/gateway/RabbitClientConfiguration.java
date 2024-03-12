@@ -1,19 +1,19 @@
 package edu.stanford.protege.webprotege.gateway;
 
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import edu.stanford.protege.webprotege.ipc.CommandHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.*;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.connection.Connection;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.ArrayList;
 
 @Configuration
 public class RabbitClientConfiguration {
@@ -24,6 +24,9 @@ public class RabbitClientConfiguration {
     public static final String RPC_RESPONSE_QUEUE = "webprotege-api-gateway-response-queue";
 
     public static final String RPC_EXCHANGE = "webprotege-exchange";
+
+    @Autowired
+    ConnectionFactory connectionFactory;
 
     @Bean
     Queue msgQueue() {
@@ -40,19 +43,18 @@ public class RabbitClientConfiguration {
         return new TopicExchange(RPC_EXCHANGE, true ,false);
     }
 
-    @Bean
-    public com.rabbitmq.client.ConnectionFactory connectionFactory(){
-        com.rabbitmq.client.ConnectionFactory response = new com.rabbitmq.client.ConnectionFactory();
-        response.setHost("rabbitmq");
-        return response;
-    }
+//    @Bean
+//    public com.rabbitmq.client.ConnectionFactory connectionFactory(){
+//        com.rabbitmq.client.ConnectionFactory response = new com.rabbitmq.client.ConnectionFactory();
+//        response.setHost("rabbitmq");
+//        return response;
+//    }
 
 
     @Bean
     Binding msgBinding() {
-        com.rabbitmq.client.ConnectionFactory connectionFactory = connectionFactory();
-        try (Connection connection = connectionFactory.newConnection();
-             Channel channel = connection.createChannel()) {
+        try (Connection connection = connectionFactory.createConnection();
+             Channel channel = connection.createChannel(false)) {
             channel.exchangeDeclare(RPC_EXCHANGE, "topic", true);
             channel.queueDeclare(RPC_QUEUE1,true,false, false,null);
             channel.queueDeclare(RPC_RESPONSE_QUEUE,true,false, false,null);

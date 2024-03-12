@@ -22,13 +22,14 @@ spring:
     publisher-returns: true
   security:
     oauth2:
-      registration.keycloak:
-        client-id: webprotege
-        authorization-grant-type: authorization_code
-        scope: openid
-      provider.keycloak:
-        issuer-uri: http://webprotege-local.edu/auth/realms/webprotege
-        user-name-attribute: preferred_username
+      client:
+        registration.keycloak:
+          client-id: webprotege
+          authorization-grant-type: authorization_code
+          scope: openid
+        provider.keycloak:
+          issuer-uri: http://webprotege-local.edu/auth/realms/webprotege
+          user-name-attribute: preferred_username
 
 webprotege:
   gateway:
