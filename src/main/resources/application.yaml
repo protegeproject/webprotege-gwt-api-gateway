@@ -15,7 +15,6 @@ spring:
     publisher-returns: true
 
 webprotege:
-  pulsar.tenant: webprotege
   gateway:
     reply-channel: ${spring.application.name}-replies
     timeout: 600000 # Ten minutes

@@ -1,12 +1,8 @@
 package edu.stanford.protege.webprotege.gateway;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.stanford.protege.webprotege.ipc.pulsar.PulsarProducersManager;
-import org.apache.pulsar.client.api.PulsarClient;
-import org.apache.pulsar.client.api.PulsarClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,15 +20,6 @@ public class WebprotegeGwtApiGatewayApplication implements CommandLineRunner {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebprotegeGwtApiGatewayApplication.class);
 
-	@Value("${webprotege.gateway.reply-channel}")
-	private String replyTopic;
-
-	@Value("${webprotege.pulsar.serviceUrl}")
-	private String pulsarServiceUrl;
-
-	@Value("${spring.application.name}")
-	private String applicationName;
-
 	@Value("${webprotege.apigateway.forceUserName:}")
 	private String forceUserName;
 
@@ -49,30 +36,15 @@ public class WebprotegeGwtApiGatewayApplication implements CommandLineRunner {
 	}
 
 	@Bean
-	PulsarClient pulsarClient() throws PulsarClientException {
-		return PulsarClient.builder()
-						   .serviceUrl(pulsarServiceUrl).build();
-	}
-
-	@Bean
-	PulsarProducersManager producersManager(PulsarClient pulsarClient) {
-		return new PulsarProducersManager(pulsarClient, applicationName);
-	}
-
-	@Bean
 	RpcRequestProcessor rpcRequestProcessor(ObjectMapper objectMapper,
 											Messenger messenger,
 											RabbitTemplate rabbitTemplate,
-											DirectExchange directExchange) {
-		return new RpcRequestProcessor(messenger, objectMapper, rabbitTemplate, directExchange);
+											TopicExchange topicExchange) {
+		return new RpcRequestProcessor(messenger, objectMapper, rabbitTemplate, topicExchange);
 	}
 
 	@Bean
-	MessengerPulsarImpl messageHandler(PulsarClient pulsarClient,
-									   PulsarProducersManager producersManager,
-									   ObjectMapper objectMapper,
-									   GatewayProperties properties,
-									   RabbitTemplate rabbitTemplate) {
-		return new MessengerPulsarImpl(pulsarClient, producersManager, objectMapper, properties, rabbitTemplate);
+	MessengerImpl messageHandler(RabbitTemplate rabbitTemplate) {
+		return new MessengerImpl(rabbitTemplate);
 	}
 }

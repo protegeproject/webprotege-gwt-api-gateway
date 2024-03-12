@@ -36,8 +36,8 @@ public class RabbitClientConfiguration {
     }
 
     @Bean
-    DirectExchange exchange() {
-        return new DirectExchange(RPC_EXCHANGE, true ,false);
+    TopicExchange exchange() {
+        return new TopicExchange(RPC_EXCHANGE, true ,false);
     }
 
     @Bean
@@ -53,14 +53,13 @@ public class RabbitClientConfiguration {
         com.rabbitmq.client.ConnectionFactory connectionFactory = connectionFactory();
         try (Connection connection = connectionFactory.newConnection();
              Channel channel = connection.createChannel()) {
-            channel.exchangeDeclare(RPC_EXCHANGE, "direct", true);
+            channel.exchangeDeclare(RPC_EXCHANGE, "topic", true);
             channel.queueDeclare(RPC_QUEUE1,true,false, false,null);
             channel.queueDeclare(RPC_RESPONSE_QUEUE,true,false, false,null);
 
             channel.queueBind(RPC_QUEUE1, RPC_EXCHANGE, "webprotege.api-gateway-response.queue");
         } catch (Exception e) {
             logger.error("Error ", e);
-            throw new RuntimeException(e);
         }
         return BindingBuilder.bind(msgQueue()).to(exchange()).with(RPC_QUEUE1);
     }
