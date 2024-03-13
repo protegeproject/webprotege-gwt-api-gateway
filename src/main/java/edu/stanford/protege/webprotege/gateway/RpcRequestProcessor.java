@@ -7,12 +7,12 @@ import edu.stanford.protege.webprotege.ipc.CommandExecutionException;
 import edu.stanford.protege.webprotege.ipc.Headers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageBuilder;
-import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.amqp.core.Message;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -34,15 +34,15 @@ public class RpcRequestProcessor {
 
     private final ObjectMapper objectMapper;
 
-    private final TopicExchange topicExchange;
+    private final DirectExchange directExchange;
 
     public RpcRequestProcessor(Messenger messenger,
                                ObjectMapper objectMapper,
-                               RabbitTemplate rabbitTemplate, TopicExchange topicExchange) {
+                               RabbitTemplate rabbitTemplate, DirectExchange directExchange) {
         this.messenger = messenger;
         this.objectMapper = objectMapper;
         this.rabbitTemplate = rabbitTemplate;
-        this.topicExchange = topicExchange;
+        this.directExchange = directExchange;
     }
 
 
@@ -54,7 +54,7 @@ public class RpcRequestProcessor {
         rabbitRequest.getMessageProperties().getHeaders().put("webprotege_methodName", request.methodName());
         rabbitRequest.getMessageProperties().getHeaders().put(Headers.USER_ID, userId.value());
 
-        Message response = rabbitTemplate.sendAndReceive(topicExchange.getName(), request.methodName() ,rabbitRequest);
+        Message response = rabbitTemplate.sendAndReceive(directExchange.getName(), request.methodName() ,rabbitRequest);
 
         var result = parseResultFromResponseMessagePayload(response.getBody());
 
