@@ -11,6 +11,7 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -23,6 +24,9 @@ public class RabbitClientConfiguration {
     public static final String RPC_RESPONSE_QUEUE = "webprotege-api-gateway-response-queue";
 
     public static final String RPC_EXCHANGE = "webprotege-exchange";
+
+    @Value("${spring.rabbitmq.host}")
+    private String rabbitMqHost;
 
     @Bean
     Queue msgQueue() {
@@ -42,7 +46,7 @@ public class RabbitClientConfiguration {
     @Bean
     public com.rabbitmq.client.ConnectionFactory connectionFactory(){
         com.rabbitmq.client.ConnectionFactory response = new com.rabbitmq.client.ConnectionFactory();
-        response.setHost("rabbitmq");
+        response.setHost(rabbitMqHost);
         return response;
     }
 
