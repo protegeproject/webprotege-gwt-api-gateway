@@ -1,6 +1,7 @@
 package edu.stanford.protege.webprotege.gateway;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 @Import(MockJwtDecoderConfiguration.class)
 @AutoConfigureJsonTesters
+@ExtendWith(IntegrationTestsExtension.class)
 class RpcResponse_Test {
 
     private static final String THEMETHOD = "themethod";

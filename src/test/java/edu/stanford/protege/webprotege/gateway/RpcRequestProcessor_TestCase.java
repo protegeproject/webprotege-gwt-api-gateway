@@ -5,6 +5,7 @@ import edu.stanford.protege.webprotege.common.UserId;
 import edu.stanford.protege.webprotege.ipc.Headers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.stubbing.Answer;
 import org.springframework.amqp.core.DirectExchange;
@@ -23,7 +24,7 @@ import java.util.function.Supplier;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 /**
  * Matthew Horridge
@@ -33,6 +34,7 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @Import(MockJwtDecoderConfiguration.class)
 @DirtiesContext
+@ExtendWith(IntegrationTestsExtension.class)
 public class RpcRequestProcessor_TestCase {
 
     private static final String STATUS_CODE_300_ERROR = """

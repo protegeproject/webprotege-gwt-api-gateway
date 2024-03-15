@@ -1,0 +1,29 @@
+server:
+  port: 7777
+
+spring:
+  application:
+    name: webprotege-gwt-api-gateway
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+    publisher-confirm-type: correlated
+    publisher-returns: true
+
+webprotege:
+  gateway:
+    reply-channel: ${spring.application.name}-replies
+    timeout: 600000 # Ten minutes
+
+spring.security.oauth2:
+  client:
+    registration.keycloak:
+      client-id: webprotege
+      authorization-grant-type: authorization_code
+      scope: openid
+    provider.keycloak:
+      issuer-uri: http://localhost:8080/auth/realms/webprotege
+      user-name-attribute: preferred_username
+  resource-server.jwt.issuer-uri: http://localhost:8080/auth/realms/webprotege

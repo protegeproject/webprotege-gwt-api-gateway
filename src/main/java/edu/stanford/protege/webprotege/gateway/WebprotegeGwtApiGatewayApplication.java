@@ -28,7 +28,7 @@ public class WebprotegeGwtApiGatewayApplication implements CommandLineRunner {
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
+	public void run(String... args) {
 		if(!forceUserName.isEmpty()) {
 			logger.warn("Forcing user name {} for every request", forceUserName);
 		}
