@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.stubbing.Answer;
-import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -61,13 +61,13 @@ public class RpcRequestProcessor_TestCase {
     private RabbitTemplate rabbitTemplate;
 
     @Mock
-    private TopicExchange topicExchange;
+    private DirectExchange directExchange;
 
     @BeforeEach
     void setUp() {
         when(messenger.sendAndReceive(any(), any(), any(), any()))
                 .thenAnswer((Answer<CompletableFuture<Msg>>) invocationOnMock -> CompletableFuture.completedFuture(replyMessageSupplier.get()));
-        processor = new RpcRequestProcessor(messenger, objectMapper, rabbitTemplate, topicExchange);
+        processor = new RpcRequestProcessor(messenger, objectMapper);
     }
 
     @Test

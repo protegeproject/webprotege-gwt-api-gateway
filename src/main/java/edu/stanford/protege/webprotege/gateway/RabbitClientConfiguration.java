@@ -2,32 +2,29 @@ package edu.stanford.protege.webprotege.gateway;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
-import edu.stanford.protege.webprotege.ipc.CommandHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.ArrayList;
 
 @Configuration
 public class RabbitClientConfiguration {
 
     private final static Logger logger = LoggerFactory.getLogger(RabbitClientConfiguration.class);
 
-    public static final String RPC_QUEUE1 = "webprotege-api-gateway-queue";
+    public static final String RPC_COMMAND_QUEUE = "webprotege-api-gateway-queue";
     public static final String RPC_RESPONSE_QUEUE = "webprotege-api-gateway-response-queue";
 
     public static final String RPC_EXCHANGE = "webprotege-exchange";
 
     @Bean
     Queue msgQueue() {
-        return new Queue(RPC_QUEUE1, true);
+        return new Queue(RPC_COMMAND_QUEUE, true);
     }
 
     @Bean
@@ -36,8 +33,8 @@ public class RabbitClientConfiguration {
     }
 
     @Bean
-    TopicExchange exchange() {
-        return new TopicExchange(RPC_EXCHANGE, true ,false);
+    DirectExchange exchange() {
+        return new DirectExchange(RPC_EXCHANGE, true ,false);
     }
 
     @Bean
@@ -53,15 +50,15 @@ public class RabbitClientConfiguration {
         com.rabbitmq.client.ConnectionFactory connectionFactory = connectionFactory();
         try (Connection connection = connectionFactory.newConnection();
              Channel channel = connection.createChannel()) {
-            channel.exchangeDeclare(RPC_EXCHANGE, "topic", true);
-            channel.queueDeclare(RPC_QUEUE1,true,false, false,null);
+            channel.exchangeDeclare(RPC_EXCHANGE, "direct", true);
+            channel.queueDeclare(RPC_COMMAND_QUEUE,true,false, false,null);
             channel.queueDeclare(RPC_RESPONSE_QUEUE,true,false, false,null);
 
-            channel.queueBind(RPC_QUEUE1, RPC_EXCHANGE, "webprotege.api-gateway-response.queue");
+            channel.queueBind(RPC_COMMAND_QUEUE, RPC_EXCHANGE, "webprotege.api-gateway-response.queue");
         } catch (Exception e) {
             logger.error("Error ", e);
         }
-        return BindingBuilder.bind(msgQueue()).to(exchange()).with(RPC_QUEUE1);
+        return BindingBuilder.bind(msgQueue()).to(exchange()).with(RPC_COMMAND_QUEUE);
     }
 
     @Bean
@@ -72,20 +69,22 @@ public class RabbitClientConfiguration {
 
 
     @Bean
-    RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
-        RabbitTemplate template = new RabbitTemplate(connectionFactory);
-        template.setReplyAddress(RPC_RESPONSE_QUEUE);
-        template.setReplyTimeout(6000);
-        return template;
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+        rabbitTemplate.setExchange(RPC_EXCHANGE);
+        return rabbitTemplate;
     }
 
+    @Bean
+    AsyncRabbitTemplate asyncRabbitTemplate(RabbitTemplate rabbitTemplate,  SimpleMessageListenerContainer replyContainer) {
+        return new AsyncRabbitTemplate(rabbitTemplate,replyContainer, RPC_RESPONSE_QUEUE);
+    }
 
     @Bean
     SimpleMessageListenerContainer replyContainer(ConnectionFactory connectionFactory) {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
         container.setQueueNames(RPC_RESPONSE_QUEUE);
-        container.setMessageListener(rabbitTemplate(connectionFactory));
         return container;
     }
 
