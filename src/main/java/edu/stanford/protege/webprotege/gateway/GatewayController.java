@@ -40,7 +40,6 @@ public class GatewayController {
     public RpcResponse execute(@RequestBody RpcRequest request,
                                @AuthenticationPrincipal Jwt principal) throws JsonProcessingException {
         // Temp workaround for keycloak setup issues
-        logger.info("ALEX am primit mesaj " + new ObjectMapper().writeValueAsString(request));
         final String accessToken;
         final String userId;
         if (!forceUserName.isEmpty()) {
