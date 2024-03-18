@@ -1,5 +1,7 @@
 package edu.stanford.protege.webprotege.gateway;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.stanford.protege.webprotege.common.UserId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +38,9 @@ public class GatewayController {
 
     @PostMapping(path = "/api/execute", consumes = "application/json")
     public RpcResponse execute(@RequestBody RpcRequest request,
-                               @AuthenticationPrincipal Jwt principal) {
+                               @AuthenticationPrincipal Jwt principal) throws JsonProcessingException {
         // Temp workaround for keycloak setup issues
+        logger.info("ALEX am primit mesaj " + new ObjectMapper().writeValueAsString(request));
         final String accessToken;
         final String userId;
         if (!forceUserName.isEmpty()) {

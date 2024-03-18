@@ -92,7 +92,7 @@ public class RpcRequestProcessor_TestCase {
 
     @Test
     void shouldReturnGatewayTimeOutForMessageReplyTimeout() {
-        when(messenger.sendAndReceive(anyString(),anyString(), any(), any()))
+        when(messenger.sendAndReceive(any(),anyString(), any(), any()))
                 .thenReturn(CompletableFuture.failedFuture(new TimeoutException("Timeout")));
         var response = processRequest();
         assertThat(response.error()).isNotNull();
@@ -101,7 +101,7 @@ public class RpcRequestProcessor_TestCase {
 
     @Test
     void shouldHandleRuntimeExceptionThrownByMessageHandler() {
-        when(messenger.sendAndReceive(anyString(),anyString(), any(byte[].class), any()))
+        when(messenger.sendAndReceive(any(),anyString(), any(byte[].class), any()))
                 .thenThrow(new RuntimeException());
         var response = processRequest();
         assertThat(response.error()).isNotNull();

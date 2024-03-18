@@ -1,8 +1,6 @@
 server:
   port: 7777
-logging:
-  level:
-    root: DEBUG
+
 spring:
   application:
     name: webprotege-gwt-api-gateway

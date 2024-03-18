@@ -32,12 +32,16 @@ public class MessengerImpl implements Messenger {
      * @return The reply message.
      */
     @Override
-    public CompletableFuture<Msg> sendAndReceive(String topicName,String accessToken, byte[] payload, UserId userId) {
+    public CompletableFuture<Msg> sendAndReceive(RpcRequest rpcRequest,String accessToken, byte[] payload, UserId userId) {
+        String topicName = rpcRequest.methodName();
         org.springframework.amqp.core.Message rabbitRequest = MessageBuilder.withBody(payload).build();
         rabbitRequest.getMessageProperties().getHeaders().put(Headers.ACCESS_TOKEN, accessToken.toString());
         rabbitRequest.getMessageProperties().getHeaders().put("webprotege_methodName", topicName);
         rabbitRequest.getMessageProperties().getHeaders().put(Headers.USER_ID, userId.value());
-
+        if(rpcRequest.params().has("projectId")) {
+            var projectId = rpcRequest.params().get("projectId").asText();
+            rabbitRequest.getMessageProperties().getHeaders().put(Headers.PROJECT_ID, projectId);
+        }
         return asyncRabbitTemplate.sendAndReceive(RPC_EXCHANGE, topicName, rabbitRequest).thenApply(response -> {
             Map<String, String> responseHeaders = new HashMap<>();
             if(response != null) {
