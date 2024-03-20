@@ -24,6 +24,6 @@ spring.security.oauth2:
       authorization-grant-type: authorization_code
       scope: openid
     provider.keycloak:
-      issuer-uri: http://webprotege-local.edu/auth/realms/webprotege
+      issuer-uri: http://localhost:8080/auth/realms/webprotege
       user-name-attribute: preferred_username
-  resourceserver.jwt.issuer-uri: http://webprotege-local.edu/auth/realms/webprotege
+  resource-server.jwt.issuer-uri: http://localhost:8080/auth/realms/webprotege

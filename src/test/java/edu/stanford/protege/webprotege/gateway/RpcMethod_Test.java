@@ -1,6 +1,7 @@
 package edu.stanford.protege.webprotege.gateway;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
@@ -13,11 +14,11 @@ import java.io.IOException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@SpringBootTest(classes = WebprotegeGwtApiGatewayApplication.class)
+@SpringBootTest
 @Import(MockJwtDecoderConfiguration.class)
-@EnableConfigurationProperties(value = GatewayProperties.class)
 @AutoConfigureJsonTesters
-class RpcMethod_Test {
+@ExtendWith(IntegrationTestsExtension.class)
+class RpcMethod_Test{
 
     public static final String METHOD_NAME = "MethodX";
 
