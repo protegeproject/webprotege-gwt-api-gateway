@@ -4,22 +4,9 @@ server:
 spring:
   application:
     name: test-webprotege-gwt-api-gateway
-  kafka:
-    consumer:
-      group-id: ${spring.application.name}-consumer-group
-      auto-offset-reset: earliest
-      bootstrap-servers: localhost:9092
-    producer:
-      value-serializer: org.springframework.kafka.support.serializer.StringOrBytesSerializer
-      key-serializer: org.springframework.kafka.support.serializer.StringOrBytesSerializer
-      bootstrap-servers: localhost:9092
   rabbitmq:
-    host: localhost
-    port: 5672
     username: guest
     password: guest
-    publisher-confirm-type: correlated
-    publisher-returns: true
   security:
     oauth2:
       client:
@@ -31,6 +18,12 @@ spring:
           user-name-attribute: preferred_username
 
 webprotege:
+  rabbitmq:
+    requestqueue: webprotege-gwt-api-gateway-queue
+    responsequeue: webprotege-gwt-api-gateway-response-queue
+    timeout: 60000
   gateway:
     reply-channel: ${spring.application.name}-replies
     timeout: 600000 # Ten minutes
+
+

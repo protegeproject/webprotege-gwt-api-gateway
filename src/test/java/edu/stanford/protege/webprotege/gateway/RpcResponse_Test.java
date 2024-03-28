@@ -1,35 +1,33 @@
 package edu.stanford.protege.webprotege.gateway;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.json.JacksonTester;
-import org.springframework.context.annotation.Import;
+import org.springframework.core.ResolvableType;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.UUID;
 
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest
-@Import(MockJwtDecoderConfiguration.class)
-@AutoConfigureJsonTesters
-@ExtendWith(IntegrationTestsExtension.class)
 class RpcResponse_Test {
 
     private static final String THEMETHOD = "themethod";
 
-    @Autowired
     private JacksonTester<RpcResponse> tester;
+
+    @BeforeEach
+    void setUp() {
+        tester = new JacksonTester<>(RpcRequest_Test.class,
+                                     ResolvableType.forClass(RpcResponse.class),
+                                     new ObjectMapper());
+    }
 
     @Test
     void shouldSerializeResponseContainingResult() throws IOException {
-        var correlationId = UUID.randomUUID().toString();
         var result = new HashMap<String, Object>();
         result.put("x", "y");
         var response = new RpcResponse(THEMETHOD, null,

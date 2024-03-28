@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import static edu.stanford.protege.webprotege.gateway.RabbitClientConfiguration.RPC_EXCHANGE;
-
 /**
  * Matthew Horridge
  * Stanford Center for Biomedical Informatics Research
@@ -42,7 +40,7 @@ public class MessengerImpl implements Messenger {
             var projectId = rpcRequest.params().get("projectId").asText();
             rabbitRequest.getMessageProperties().getHeaders().put(Headers.PROJECT_ID, projectId);
         }
-        return asyncRabbitTemplate.sendAndReceive(RPC_EXCHANGE, topicName, rabbitRequest).thenApply(response -> {
+        return asyncRabbitTemplate.sendAndReceive("webprotege-exchange", topicName, rabbitRequest).thenApply(response -> {
             Map<String, String> responseHeaders = new HashMap<>();
             if(response != null) {
                 response.getMessageProperties().getHeaders().forEach((key, value) -> responseHeaders.put(key, String.valueOf(value)));

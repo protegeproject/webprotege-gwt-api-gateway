@@ -7,14 +7,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
-import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -31,11 +26,8 @@ import static org.mockito.Mockito.when;
  * Stanford Center for Biomedical Informatics Research
  * 2021-09-10
  */
-@SpringBootTest
-@Import(MockJwtDecoderConfiguration.class)
-@DirtiesContext
-@ExtendWith(IntegrationTestsExtension.class)
-public class RpcRequestProcessor_TestCase {
+@ExtendWith(MockitoExtension.class)
+class RpcRequestProcessor_TestCase {
 
     private static final String STATUS_CODE_300_ERROR = """
                 {
@@ -51,22 +43,14 @@ public class RpcRequestProcessor_TestCase {
 
     private RpcRequestProcessor processor;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     private Supplier<Msg> replyMessageSupplier = () -> null;
 
     @Mock
     private Messenger messenger;
 
-    @Mock
-    private RabbitTemplate rabbitTemplate;
-
-    @Mock
-    private DirectExchange directExchange;
-
     @BeforeEach
     void setUp() {
+        var objectMapper = new ObjectMapper();
         when(messenger.sendAndReceive(any(), any(), any(), any()))
                 .thenAnswer((Answer<CompletableFuture<Msg>>) invocationOnMock -> CompletableFuture.completedFuture(replyMessageSupplier.get()));
         processor = new RpcRequestProcessor(messenger, objectMapper);

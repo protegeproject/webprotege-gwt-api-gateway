@@ -1,31 +1,29 @@
 package edu.stanford.protege.webprotege.gateway;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.json.JacksonTester;
-import org.springframework.context.annotation.Import;
+import org.springframework.core.ResolvableType;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@Import(MockJwtDecoderConfiguration.class)
-@AutoConfigureJsonTesters
-@ExtendWith(IntegrationTestsExtension.class)
 class RpcRequest_Test {
 
     public static final String METHOD_NAME = "TheMethod";
 
-    /** @noinspection SpringJavaInjectionPointsAutowiringInspection*/
-    @Autowired
     private JacksonTester<RpcRequest> tester;
 
+    @BeforeEach
+    void setUp() {
+        tester = new JacksonTester<>(RpcRequest_Test.class,
+                                     ResolvableType.forClass(RpcRequest.class),
+                                     new ObjectMapper());
+    }
 
     @Test
     void shouldSerializeRpcRequestWithoutParameters() throws IOException {

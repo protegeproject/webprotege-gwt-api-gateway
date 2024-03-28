@@ -13,6 +13,9 @@ spring:
     publisher-returns: true
 
 webprotege:
+  rabbitmq:
+    requestqueue: webprotege-gwt-api-gateway-queue
+    responsequeue: webprotege-gwt-api-gateway-response-queue
   gateway:
     reply-channel: ${spring.application.name}-replies
     timeout: 600000 # Ten minutes
