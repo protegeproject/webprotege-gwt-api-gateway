@@ -16,7 +16,9 @@ webprotege:
   rabbitmq:
     requestqueue: webprotege-gwt-api-gateway-queue
     responsequeue: webprotege-gwt-api-gateway-response-queue
+    eventsqueue: webprotege-gwt-api-gateway-event-queue
     timeout: 60000
+    event-subscribe: true
 
 spring.security.oauth2:
   client:

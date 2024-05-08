@@ -53,7 +53,7 @@ public class SecurityConfig {
     public SecurityFilterChain resourceServerFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/execute")
+                        .requestMatchers("/api/execute", "/wsapps")
                         .permitAll()
                         .anyRequest()
                         .authenticated()
