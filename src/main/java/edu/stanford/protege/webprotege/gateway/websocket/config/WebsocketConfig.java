@@ -3,7 +3,10 @@ package edu.stanford.protege.webprotege.gateway.websocket.config;
 import edu.stanford.protege.webprotege.gateway.websocket.AccessManager;
 import jakarta.websocket.ContainerProvider;
 import jakarta.websocket.WebSocketContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -19,6 +22,11 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
     private static final int MAX_TEXT_MESSAGE_BUFFER_SIZE = 1024 * 1024;
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(WebsocketConfig.class);
+
+    @Value("${webprotege.allowedOrigin}")
+    private String allowedWebsocketOrigin;
+
 
     @Autowired
     private AccessManager accessManager;
@@ -31,7 +39,7 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/wsapps");
+        registry.addEndpoint("/wsapps").setAllowedOrigins(allowedWebsocketOrigin);
 
     }
 

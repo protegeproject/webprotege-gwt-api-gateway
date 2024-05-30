@@ -19,6 +19,7 @@ webprotege:
     eventsqueue: webprotege-gwt-api-gateway-event-queue
     timeout: 60000
     event-subscribe: true
+  allowedOrigin: webprotege-local.edu
 
 spring.security.oauth2:
   client:
