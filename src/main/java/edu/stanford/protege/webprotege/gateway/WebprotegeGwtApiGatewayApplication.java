@@ -2,18 +2,14 @@ package edu.stanford.protege.webprotege.gateway;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.stanford.protege.webprotege.ipc.WebProtegeIpcApplication;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.minio.MinioClient;
+import org.slf4j.*;
 import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
+import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.boot.context.properties.*;
+import org.springframework.context.annotation.*;
 
 @EnableConfigurationProperties
 @ConfigurationPropertiesScan
@@ -36,6 +32,15 @@ public class WebprotegeGwtApiGatewayApplication implements CommandLineRunner {
 		if(!forceUserName.isEmpty()) {
 			logger.warn("Forcing user name {} for every request", forceUserName);
 		}
+	}
+
+
+	@Bean
+	MinioClient minioClient(MinioProperties properties) {
+		return MinioClient.builder()
+								   .credentials(properties.getAccessKey(), properties.getSecretKey())
+								   .endpoint(properties.getEndPoint())
+								   .build();
 	}
 
 	@Bean
