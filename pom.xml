@@ -10,7 +10,7 @@
     </parent>
     <groupId>edu.stanford.protege</groupId>
     <artifactId>webprotege-gwt-api-gateway</artifactId>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
     <name>webprotege-gwt-api-gateway</name>
     <description>The API Gateway for the WebProtégé GWT User Interface</description>
     <properties>
