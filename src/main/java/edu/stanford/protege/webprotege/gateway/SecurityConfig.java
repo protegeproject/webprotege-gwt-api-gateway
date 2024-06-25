@@ -1,11 +1,9 @@
 package edu.stanford.protege.webprotege.gateway;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.*;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
@@ -13,13 +11,11 @@ import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
-import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.authentication.session.*;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -39,16 +35,19 @@ public class SecurityConfig {
     SecurityConfig(KeycloakLogoutHandler keycloakLogoutHandler) {
         this.keycloakLogoutHandler = keycloakLogoutHandler;
     }
-
+    @Bean
+    public LogoutFilter customLogoutFilter() {
+        return new LogoutFilter("/login?logout", keycloakLogoutHandler);
+    }
 
     @Bean
     protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
         return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
     }
-    @Bean
+/*    @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.debug(true);
-    }
+    }*/
     @Bean
     public SecurityFilterChain resourceServerFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
@@ -57,10 +56,12 @@ public class SecurityConfig {
                         .anyRequest()
                         .authenticated()
                 );
+        http.addFilterAfter(customLogoutFilter(), AuthorizationFilter.class);
         http.oauth2ResourceServer((oauth2) -> oauth2
                 .jwt(Customizer.withDefaults()));
         http.oauth2Login(Customizer.withDefaults())
-                .logout(logout -> logout.addLogoutHandler(keycloakLogoutHandler).logoutSuccessUrl("/"));
+                .logout(AbstractHttpConfigurer::disable);
+        
         return http.build();
     }
 
