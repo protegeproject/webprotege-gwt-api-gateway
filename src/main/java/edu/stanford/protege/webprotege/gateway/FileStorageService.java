@@ -43,6 +43,7 @@ public class FileStorageService {
         logger.info("Storing file ({}) in {} bucket with an object id of {}", getFileSizeInMB(tempFile), minioProperties.getBucketName(), fileIdentifier);
         createBucketIfNecessary();
         uploadObject(tempFile, fileIdentifier);
+        logger.info("File {} uploaded successfully !", fileIdentifier);
         return new FileSubmissionId(fileIdentifier);
     }
 

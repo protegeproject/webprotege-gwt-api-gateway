@@ -1,15 +1,19 @@
 package edu.stanford.protege.webprotege.gateway;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.stanford.protege.webprotege.common.UserId;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,8 +38,12 @@ public class GatewayController {
 
     private final RpcRequestProcessor rpcRequestProcessor;
 
-    public GatewayController(RpcRequestProcessor rpcRequestProcessor) {
+    private final LogoutHandler logoutHandler;
+
+
+    public GatewayController(RpcRequestProcessor rpcRequestProcessor, LogoutHandler logoutHandler) {
         this.rpcRequestProcessor = rpcRequestProcessor;
+        this.logoutHandler = logoutHandler;
     }
 
     @PostMapping(path = "/api/execute", consumes = "application/json")
@@ -63,5 +71,11 @@ public class GatewayController {
         } catch (TimeoutException e) {
             return RpcResponse.forError(request.methodName(), HttpStatus.GATEWAY_TIMEOUT);
         }
+    }
+
+    @GetMapping(path = "/logout")
+    public HttpServletResponse logout(HttpServletRequest request, HttpServletResponse response) {
+        logoutHandler.logout(request, response, SecurityContextHolder.getContext().getAuthentication());
+        return  response;
     }
 }
