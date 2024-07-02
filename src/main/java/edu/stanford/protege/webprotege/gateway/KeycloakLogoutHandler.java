@@ -25,7 +25,7 @@ public class KeycloakLogoutHandler extends SecurityContextLogoutHandler {
     public void logout(HttpServletRequest request, HttpServletResponse response,
                        Authentication auth) {
         logoutFromKeycloak((Jwt) auth.getPrincipal());
-        super.logout(request, response,auth);
+        super.logout(request, response, auth);
     }
 
     private void logoutFromKeycloak(Jwt token) {
