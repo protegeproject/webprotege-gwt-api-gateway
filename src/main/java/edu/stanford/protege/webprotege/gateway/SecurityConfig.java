@@ -71,7 +71,6 @@ public class SecurityConfig {
                 .jwt(Customizer.withDefaults()));
         http.oauth2Login(Customizer.withDefaults())
                 .logout(AbstractHttpConfigurer::disable);
-
         return http.build();
     }
 
