@@ -11,6 +11,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import edu.stanford.protege.webprotege.change.OntologyChangedEvent;
 import edu.stanford.protege.webprotege.event.*;
 import edu.stanford.protege.webprotege.frame.*;
+import edu.stanford.protege.webprotege.gateway.websocket.config.events.ProjectLinearizationChangedEvent;
 import edu.stanford.protege.webprotege.hierarchy.EntityHierarchyChangedEvent;
 import edu.stanford.protege.webprotege.issues.CommentPostedEvent;
 import edu.stanford.protege.webprotege.issues.CommentUpdatedEvent;
@@ -313,6 +314,7 @@ public class ObjectMapperConfiguration {
                     OntologyBrowserTextChangedEvent.class,
                     PermissionsChangedEvent.class,
                     ProjectChangedEvent.class,
+                    ProjectLinearizationChangedEvent.class,
                     ProjectMovedToTrashEvent.class,
                     OntologyChangedEvent.class,
                     ProjectRemovedFromTrashEvent.class,
