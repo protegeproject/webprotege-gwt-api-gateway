@@ -62,6 +62,7 @@ public class ProjectChangedEmitterHandlerTest {
         packagedProjectChangeEvent = new PackagedProjectChangeEvent(projectId, eventId, List.of(entityTagsChangedEvent));
     }
 
+    //
     @Test
     public void GIVEN_entityTagsChangedEvent_WHEN_registerEvent_THEN_eventIsPushedToWebsocket() throws JsonProcessingException {
         eventHandler.handleEvent(packagedProjectChangeEvent);
