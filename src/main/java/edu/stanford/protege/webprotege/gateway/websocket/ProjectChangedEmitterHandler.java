@@ -52,7 +52,6 @@ public class ProjectChangedEmitterHandler implements EventHandler<PackagedProjec
             ProjectEventsQueryResponse response = new ProjectEventsQueryResponse();
             response.events = new EventList(EventTag.getFirst(), event.projectEvents(), EventTag.get(1));
             simpMessagingTemplate.send("/topic/project-events/" + event.projectId().id(), new GenericMessage<>(objectMapper.writeValueAsBytes(response)));
-
         } catch (Exception e) {
             LOGGER.error("Error forwarding the events through websocket");
         }
