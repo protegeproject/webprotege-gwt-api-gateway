@@ -62,7 +62,7 @@ jobs:
           
           echo "New version: $new_version"
           mvn versions:set -DnewVersion=$new_version -DgenerateBackupPoms=false
-          echo "::          set-output name=new_version::$new_version"
+          echo "::set-output name=new_version::$new_version"
       - name: Commit new version
         run: |
           git config --global user.name "github-actions[bot]"
@@ -73,7 +73,7 @@ jobs:
           git push origin HEAD:${GITHUB_REF##*/}
           git push origin ${{ steps.bump.outputs.new_version }}
       - name: Build and Publish package
-        run: mvn --batch-mode -Prelease package dockerfile:push
+        run: mvn --batch-mode package install
       - name: Release
         uses: softprops/action-gh-release@v1
         env:
