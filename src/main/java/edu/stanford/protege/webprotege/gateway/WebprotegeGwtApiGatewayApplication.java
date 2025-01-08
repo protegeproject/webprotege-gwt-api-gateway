@@ -45,9 +45,10 @@ public class WebprotegeGwtApiGatewayApplication implements CommandLineRunner {
 
 	@Bean
 	@Lazy
-	RpcRequestProcessor rpcRequestProcessor(ObjectMapper objectMapper,
+	RpcRequestProcessor rpcRequestProcessor(@Value("${spring.application.name}") String applicationName,
+											ObjectMapper objectMapper,
 											Messenger messenger) {
-		return new RpcRequestProcessor(messenger, objectMapper);
+		return new RpcRequestProcessor(applicationName, messenger, objectMapper);
 	}
 
 	@Bean

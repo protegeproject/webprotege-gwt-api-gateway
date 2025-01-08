@@ -9,7 +9,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.AmqpTimeoutException;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -17,8 +20,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 /**
@@ -53,11 +55,11 @@ class RpcRequestProcessor_TestCase {
         var objectMapper = new ObjectMapper();
         when(messenger.sendAndReceive(any(), any(), any(), any()))
                 .thenAnswer((Answer<CompletableFuture<Msg>>) invocationOnMock -> CompletableFuture.completedFuture(replyMessageSupplier.get()));
-        processor = new RpcRequestProcessor(messenger, objectMapper);
+        processor = new RpcRequestProcessor("AppName", messenger, objectMapper);
     }
 
     @Test
-    void shouldPropagateErrorHeaderValue() {
+    void shouldPropagateErrorHeaderValue() throws Exception {
         var reply = Msg.withHeader(Headers.ERROR, STATUS_CODE_300_ERROR);
         replyMessageSupplier = () -> reply;
         var response = processRequest();
@@ -66,34 +68,52 @@ class RpcRequestProcessor_TestCase {
     }
 
     @Test
-    void shouldReturnInternalServerErrorForBadErrorHeaderValue() {
+    void shouldThrowInternalServerErrorForErrorHeaderThatIsUnparseable() throws Exception {
         var reply = Msg.withHeader(Headers.ERROR, "A value that won't parse");
         replyMessageSupplier = () -> reply;
-        var response = processRequest();
-        assertThat(response.error()).isNotNull();
-        assertThat(response.error().code()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        try {
+            var response = processRequest();
+        } catch (ExecutionException e) {
+            assertThat(e.getCause()).isInstanceOf(ResponseStatusException.class);
+            ResponseStatusException ex = (ResponseStatusException) e.getCause();
+            assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @Test
-    void shouldReturnGatewayTimeOutForMessageReplyTimeout() {
-        when(messenger.sendAndReceive(any(),anyString(), any(), any()))
-                .thenReturn(CompletableFuture.failedFuture(new TimeoutException("Timeout")));
-        var response = processRequest();
-        assertThat(response.error()).isNotNull();
-        assertThat(response.error().code()).isEqualTo(HttpStatus.GATEWAY_TIMEOUT.value());
-    }
+
 
     @Test
-    void shouldHandleRuntimeExceptionThrownByMessageHandler() {
+    void shouldHandleLeakyRuntimeExceptionThrownByMessageHandler() throws Exception {
+        var testMsg = "Fail as part of test";
         when(messenger.sendAndReceive(any(),anyString(), any(byte[].class), any()))
-                .thenThrow(new RuntimeException());
-        var response = processRequest();
-        assertThat(response.error()).isNotNull();
-        assertThat(response.error().code()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                .thenThrow(new RuntimeException(testMsg));
+        try {
+            processRequest();
+        } catch (ExecutionException e) {
+            assertThat(e.getCause()).isInstanceOf(ResponseStatusException.class);
+            ResponseStatusException ex = (ResponseStatusException) e.getCause();
+            assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+            assertThat(ex.getMessage()).contains(testMsg);
+        }
+    }
+
+   @Test
+    void shouldPropagateFailedFutureFromMessengerAsInternalServerError() throws Exception {
+        var testMsg = "Fail as part of message send";
+        when(messenger.sendAndReceive(any(),anyString(), any(byte[].class), any()))
+                .thenReturn(CompletableFuture.failedFuture(new AmqpTimeoutException(testMsg)));
+        try {
+            processRequest();
+        } catch (ExecutionException e) {
+            assertThat(e.getCause()).isInstanceOf(ResponseStatusException.class);
+            ResponseStatusException ex = (ResponseStatusException) e.getCause();
+            assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+            assertThat(ex.getMessage()).contains(testMsg);
+        }
     }
 
     @Test
-    void shouldReturnMapOfValuesOfMessagePayload() {
+    void shouldReturnMapOfValuesOfMessagePayload() throws Exception {
         replyMessageSupplier = () -> Msg.withPayload("""
                                                         {
                                                             "a" : "b"
@@ -104,11 +124,7 @@ class RpcRequestProcessor_TestCase {
     }
 
 
-    private RpcResponse processRequest()  {
-        try {
-            return processor.processRequest(REQUEST, ACCESSTOKEN, USER).get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
+    private RpcResponse processRequest() throws Exception {
+        return processor.processRequest(REQUEST, ACCESSTOKEN, USER).get();
     }
 }
