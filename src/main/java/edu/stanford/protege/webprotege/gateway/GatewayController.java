@@ -2,6 +2,7 @@ package edu.stanford.protege.webprotege.gateway;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.stanford.protege.webprotege.common.UserId;
+import edu.stanford.protege.webprotege.ipc.CommandExecutionException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -17,7 +18,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -31,8 +34,11 @@ import java.util.concurrent.TimeoutException;
 @Lazy
 public class GatewayController {
 
+
     @Value("${webprotege.apigateway.forceUserName:}")
     private String forceUserName;
+
+    private final long timeoutInMs;
 
     private final Logger logger = LoggerFactory.getLogger(GatewayController.class);
 
@@ -41,7 +47,8 @@ public class GatewayController {
     private final LogoutHandler logoutHandler;
 
 
-    public GatewayController(RpcRequestProcessor rpcRequestProcessor, LogoutHandler logoutHandler) {
+    public GatewayController(@Value("${webprotege.gateway.timeout:600000}") long timeoutInMs, RpcRequestProcessor rpcRequestProcessor, LogoutHandler logoutHandler) {
+        this.timeoutInMs = timeoutInMs;
         this.rpcRequestProcessor = rpcRequestProcessor;
         this.logoutHandler = logoutHandler;
     }
@@ -65,13 +72,29 @@ public class GatewayController {
         }
         var result = rpcRequestProcessor.processRequest(request, accessToken, new UserId(userId));
         try {
-            return result.get(10, TimeUnit.MINUTES);
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("Error while waiting for response to request", e);
-            return RpcResponse.forError(request.methodName(), HttpStatus.INTERNAL_SERVER_ERROR);
-
+            return result.get(timeoutInMs, TimeUnit.MILLISECONDS);
+        } catch (ExecutionException e) {
+            if(e.getCause() instanceof CommandExecutionException ex) {
+                logger.info("Error with cause that is a CommandExecutionException.  Mapping to a ResponseStatusException: {}", ex.getStatus());
+                throw new ResponseStatusException(ex.getStatus(), e.getMessage());
+            }
+            else if(e.getCause() instanceof ResponseStatusException ex) {
+                logger.info("Error with cause that is a ResponseStatusException.  Rethrowing.");
+                throw ex;
+            }
+            else {
+                logger.error("Error while handling request.  UserId: {}  Request: {}", userId, request, e);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while handling the request.");
+            }
         } catch (TimeoutException e) {
-            return RpcResponse.forError(request.methodName(), HttpStatus.GATEWAY_TIMEOUT);
+            logger.error("Time out in GatewayController while waiting for response to request.  Timeout set to {} ms.  Request: {}", timeoutInMs, request,  e);
+            throw new ResponseStatusException(HttpStatus.GATEWAY_TIMEOUT, "A time out occurred while waiting for the response.");
+        } catch (InterruptedException e) {
+            logger.error("Interrupted while waiting for response.  UserId: {}  Request: {}", userId, request, e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An interrupt occurred while handling the request.");
+        } catch (CancellationException e) {
+            logger.error("Cancellation while waiting for response.  UserId: {}  Request: {}", userId, request, e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "A cancellation occurred while waiting for the request.");
         }
     }
 
