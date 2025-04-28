@@ -5,7 +5,7 @@ import edu.stanford.protege.webprotege.authorization.Subject;
 import edu.stanford.protege.webprotege.common.ProjectId;
 import edu.stanford.protege.webprotege.common.UserId;
 import edu.stanford.protege.webprotege.gateway.websocket.AccessManager;
-import edu.stanford.protege.webprotege.gateway.websocket.dto.BuiltInAction;
+import edu.stanford.protege.webprotege.gateway.websocket.dto.BuiltInCapability;
 import edu.stanford.protege.webprotege.ipc.ExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +49,7 @@ public class ProjectEventsInterceptor  implements ChannelInterceptor {
             LOGGER.info("Validation subscription. User {} project {}", userId, projectId);
 
             var hasAccessToProject = accessManager.hasPermission(Subject.forUser(userId)
-                    , ProjectResource.forProject(ProjectId.valueOf(projectId)), BuiltInAction.VIEW_PROJECT,
+                    , ProjectResource.forProject(ProjectId.valueOf(projectId)), BuiltInCapability.VIEW_PROJECT,
                             new ExecutionContext(UserId.valueOf(userId), token));
 
             if(!hasAccessToProject) {
