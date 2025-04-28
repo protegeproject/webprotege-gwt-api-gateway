@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - main-who
 
 jobs:
   build:
@@ -57,12 +56,6 @@ jobs:
           IFS='.' read -r -a version_parts <<< "$base_version"
           version_parts[2]=$((version_parts[2] + 1))
           new_base_version="${version_parts[0]}.${version_parts[1]}.${version_parts[2]}"
-          
-          if [[ "$branch" == "main-who" ]]; then
-            new_version="${new_base_version}-WHO"
-          else
-            new_version="$new_base_version"
-          fi
          
           echo "New version: $new_base_version"
           find . -name 'pom.xml' -exec mvn versions:set -DnewVersion=$new_base_version -DgenerateBackupPoms=false -f {} \;
