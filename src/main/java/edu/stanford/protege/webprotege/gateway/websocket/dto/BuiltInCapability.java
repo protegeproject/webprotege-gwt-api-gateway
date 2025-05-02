@@ -1,15 +1,15 @@
 package edu.stanford.protege.webprotege.gateway.websocket.dto;
 
-
 import com.google.common.base.CaseFormat;
-import edu.stanford.protege.webprotege.authorization.ActionId;
+import edu.stanford.protege.webprotege.authorization.BasicCapability;
+import edu.stanford.protege.webprotege.authorization.Capability;
 
 /**
  * Matthew Horridge
  * Stanford Center for Biomedical Informatics Research
  * 5 Jan 2017
  */
-public enum BuiltInAction {
+public enum BuiltInCapability {
 
 
     CREATE_ACCOUNT,
@@ -121,19 +121,22 @@ public enum BuiltInAction {
 
     UPLOAD_AND_MERGE_ADDITIONS,
 
-    EDIT_FORMS;
+    EDIT_FORMS,
+
+    CONFIGURE_HIERARCHIES;
 
 
+    private final Capability capability;
 
-
-    private final ActionId actionId;
-
-    BuiltInAction() {
-        this.actionId = new ActionId(CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name()));
+    BuiltInCapability() {
+        this.capability = new BasicCapability(CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name()));
     }
 
-    public ActionId getActionId() {
-        return actionId;
+    BuiltInCapability(Capability capability) {
+        this.capability = capability;
+    }
+
+    public Capability getCapability() {
+        return capability;
     }
 }
-

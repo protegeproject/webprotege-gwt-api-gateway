@@ -2,12 +2,15 @@ package edu.stanford.protege.webprotege.gateway;
 
 import edu.stanford.protege.webprotege.common.UserId;
 import edu.stanford.protege.webprotege.ipc.Headers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.rabbit.AsyncRabbitTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -16,6 +19,8 @@ import java.util.concurrent.CompletableFuture;
  * 2021-09-08
  */
 public class MessengerImpl implements Messenger {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(MessengerImpl.class);
 
     private final AsyncRabbitTemplate asyncRabbitTemplate;
 
@@ -37,10 +42,12 @@ public class MessengerImpl implements Messenger {
         headers.put(Headers.ACCESS_TOKEN, accessToken);
         headers.put(Headers.METHOD, method);
         headers.put(Headers.USER_ID, userId.value());
+        headers.put(Headers.CORRELATION_ID, CorrelationMDCUtil.getCorrelationId());
         if (rpcRequest.params().has("projectId")) {
             var projectId = rpcRequest.params().get("projectId").asText();
             headers.put(Headers.PROJECT_ID, projectId);
         }
+        LOGGER.info("User {} is sending: {}",userId.value(), rpcRequest.methodName());
         return asyncRabbitTemplate.sendAndReceive("webprotege-exchange", method, rabbitRequest)
                 .thenCompose(replyMsg -> {
                     // Transform the replyMsg to a Msg
