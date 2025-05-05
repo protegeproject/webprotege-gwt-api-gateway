@@ -153,7 +153,7 @@
         <dependency>
             <groupId>edu.stanford.protege</groupId>
             <artifactId>webprotege-backend-api</artifactId>
-            <version>3.0.0-WHO</version>
+            <version>3.0.1-WHO</version>
         </dependency>
 
         <dependency>
