@@ -17,6 +17,7 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.security.access.AuthorizationServiceException;
 
 import java.util.List;
+import java.util.UUID;
 
 public class ProjectEventsInterceptor  implements ChannelInterceptor {
 
@@ -50,7 +51,7 @@ public class ProjectEventsInterceptor  implements ChannelInterceptor {
 
             var hasAccessToProject = accessManager.hasPermission(Subject.forUser(userId)
                     , ProjectResource.forProject(ProjectId.valueOf(projectId)), BuiltInCapability.VIEW_PROJECT,
-                            new ExecutionContext(UserId.valueOf(userId), token));
+                            new ExecutionContext(UserId.valueOf(userId), token, UUID.randomUUID().toString()));
 
             if(!hasAccessToProject) {
                 throw new AuthorizationServiceException("User " + userId + " does not have access to project " + projectId);

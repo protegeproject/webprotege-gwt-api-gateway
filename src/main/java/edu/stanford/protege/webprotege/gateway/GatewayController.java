@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -68,8 +69,10 @@ public class GatewayController {
             accessToken = principal.getTokenValue();
             userId = principal.getClaimAsString("preferred_username");
         }
-        var result = rpcRequestProcessor.processRequest(request, accessToken, new UserId(userId));
+
         try {
+            CorrelationMDCUtil.setCorrelationId(UUID.randomUUID().toString());
+            var result = rpcRequestProcessor.processRequest(request, accessToken, new UserId(userId));
             return result.get(timeoutInMs, TimeUnit.MILLISECONDS);
         } catch (ExecutionException e) {
             if(e.getCause() instanceof CommandExecutionException ex) {
@@ -93,6 +96,8 @@ public class GatewayController {
         } catch (CancellationException e) {
             logger.error("Cancellation while waiting for response.  UserId: {}  Request: {}", userId, request, e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "A cancellation occurred while waiting for the request.");
+        } finally {
+            CorrelationMDCUtil.clearCorrelationId();
         }
     }
 
