@@ -43,6 +43,7 @@ public class MessengerImpl implements Messenger {
         headers.put(Headers.METHOD, method);
         headers.put(Headers.USER_ID, userId.value());
         headers.put(Headers.CORRELATION_ID, CorrelationMDCUtil.getCorrelationId());
+        LOGGER.info("Setting correlationId : " + CorrelationMDCUtil.getCorrelationId());
         if (rpcRequest.params().has("projectId")) {
             var projectId = rpcRequest.params().get("projectId").asText();
             headers.put(Headers.PROJECT_ID, projectId);

@@ -2,6 +2,8 @@ package edu.stanford.protege.webprotege.gateway;
 
 import org.slf4j.MDC;
 
+import java.util.UUID;
+
 public class CorrelationMDCUtil {
     public static final String CORRELATION_ID_KEY = "correlationId";
     
@@ -16,6 +18,11 @@ public class CorrelationMDCUtil {
     }
     
     public static String getCorrelationId() {
-        return MDC.get(CORRELATION_ID_KEY);
+        String correlationId = MDC.get(CORRELATION_ID_KEY);
+        if(correlationId == null && correlationId.isEmpty()) {
+            correlationId = UUID.randomUUID().toString();
+            setCorrelationId(correlationId);
+        }
+        return correlationId;
     }
 } 
