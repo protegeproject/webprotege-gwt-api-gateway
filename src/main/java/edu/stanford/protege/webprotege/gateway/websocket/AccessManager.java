@@ -2,7 +2,7 @@ package edu.stanford.protege.webprotege.gateway.websocket;
 
 
 import edu.stanford.protege.webprotege.authorization.*;
-import edu.stanford.protege.webprotege.gateway.websocket.dto.BuiltInAction;
+import edu.stanford.protege.webprotege.gateway.websocket.dto.BuiltInCapability;
 import edu.stanford.protege.webprotege.ipc.CommandExecutor;
 import edu.stanford.protege.webprotege.ipc.ExecutionContext;
 import org.slf4j.Logger;
@@ -25,10 +25,10 @@ public class AccessManager {
 
     public boolean hasPermission(@Nonnull Subject subject,
                                  @Nonnull Resource resource,
-                                 @Nonnull BuiltInAction builtInAction,
+                                 @Nonnull BuiltInCapability builtInCapability,
                                  ExecutionContext executionContext) {
         try {
-            GetAuthorizationStatusResponse response = getAuthorizationStatusExecutor.execute(new GetAuthorizationStatusRequest(resource, subject, builtInAction.getActionId()),
+            GetAuthorizationStatusResponse response = getAuthorizationStatusExecutor.execute(new GetAuthorizationStatusRequest(resource, subject, builtInCapability.getCapability()),
                             executionContext)
                     .get();
             return response.authorizationStatus().equals(AuthorizationStatus.AUTHORIZED);
