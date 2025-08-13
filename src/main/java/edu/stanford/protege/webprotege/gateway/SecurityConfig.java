@@ -58,7 +58,10 @@ public class SecurityConfig {
     }
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.debug(true);
+        return (web) -> {
+            web.debug(true);
+            web.ignoring().requestMatchers(webprotegeWebsocketEndpoint);
+        };
     }
     @Bean
     public SecurityFilterChain resourceServerFilterChain(HttpSecurity http) throws Exception {
