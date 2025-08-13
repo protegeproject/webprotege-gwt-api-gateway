@@ -67,8 +67,6 @@ public class GatewayController {
         }
         else {
             accessToken = principal.getTokenValue();
-            logger.info("ALEX " + principal.getTokenValue());
-
             userId = principal.getClaimAsString("preferred_username");
         }
 
