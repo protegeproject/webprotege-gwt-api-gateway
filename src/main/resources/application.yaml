@@ -6,12 +6,6 @@ logging:
     org:
       springframework:
         amqp: ERROR
-        security: DEBUG
-        web:
-          socket: DEBUG
-          socket.server: DEBUG
-          util.pattern: DEBUG
-        web.servlet.mvc.method.annotation: DEBUG
 spring:
   application:
     name: webprotege-gwt-api-gateway
