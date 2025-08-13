@@ -51,6 +51,7 @@ public class FormsController {
         // formDescriptors
         // formSelectors
         try {
+            CorrelationMDCUtil.setCorrelationId(UUID.randomUUID().toString());
             var tree = objectMapper.readValue(forms, new TypeReference<Map<String, Object>>() {});
             var params = new LinkedHashMap<>(tree);
             params.put("changeRequestId", ChangeRequestId.generate());
@@ -59,6 +60,8 @@ public class FormsController {
 
         } catch (JsonProcessingException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } finally {
+            CorrelationMDCUtil.clearCorrelationId();
         }
     }
 }
