@@ -27,6 +27,8 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
     @Value("${webprotege.allowedOrigin}")
     private String allowedWebsocketOrigin;
 
+    @Value("${webprotege.websocketEndpoint:/wsapps}")
+    private String webprotegeWebsocketEndpoint;
 
     @Autowired
     private AccessManager accessManager;
@@ -39,7 +41,7 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/wsapps").setAllowedOrigins(allowedWebsocketOrigin);
+        registry.addEndpoint(webprotegeWebsocketEndpoint).setAllowedOrigins(allowedWebsocketOrigin);
 
     }
 

@@ -1,6 +1,7 @@
 package edu.stanford.protege.webprotege.gateway;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -41,7 +42,8 @@ public class SecurityConfig {
     private static final String ROLES_CLAIM = "roles";
 
     private final KeycloakLogoutHandler keycloakLogoutHandler;
-
+    @Value("${webprotege.websocketEndpoint:'/wsapps'}")
+    private String webprotegeWebsocketEndpoint;
     SecurityConfig(KeycloakLogoutHandler keycloakLogoutHandler) {
         this.keycloakLogoutHandler = keycloakLogoutHandler;
     }
@@ -62,7 +64,7 @@ public class SecurityConfig {
     public SecurityFilterChain resourceServerFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/wsapps").permitAll()
+                        .requestMatchers(webprotegeWebsocketEndpoint).permitAll()
                         .anyRequest()
                         .authenticated()
                 );
