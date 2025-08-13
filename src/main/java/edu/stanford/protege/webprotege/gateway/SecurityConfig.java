@@ -56,10 +56,10 @@ public class SecurityConfig {
     protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
         return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
     }
-/*    @Bean
+    @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.debug(true);
-    }*/
+    }
     @Bean
     public SecurityFilterChain resourceServerFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
