@@ -39,7 +39,12 @@ public class FormsController {
     @GetMapping("/data/projects/{projectId}/forms")
     public ResponseEntity<Map<String, Object>> getForms(@PathVariable(PROJECT_ID) ProjectId projectId,
                                    @AuthenticationPrincipal Jwt jwt) {
-        return rpcClient.call(jwt, GET_FORM_DESCRIPTORS, Map.of(PROJECT_ID, projectId));
+        try {
+            CorrelationMDCUtil.setCorrelationId(UUID.randomUUID().toString());
+            return rpcClient.call(jwt, GET_FORM_DESCRIPTORS, Map.of(PROJECT_ID, projectId));
+        } finally {
+            CorrelationMDCUtil.clearCorrelationId();
+        }
     }
 
     @PostMapping("/data/projects/{projectId}/forms")
