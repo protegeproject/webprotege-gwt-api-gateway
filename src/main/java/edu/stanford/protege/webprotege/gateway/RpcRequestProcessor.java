@@ -10,6 +10,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpTimeoutException;
+import org.springframework.amqp.core.AmqpMessageReturnedException;
+import org.springframework.amqp.core.AmqpReplyTimeoutException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -19,6 +22,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Matthew Horridge
@@ -76,9 +81,19 @@ public class RpcRequestProcessor {
                     payload, userId);
             return reply
                     .exceptionally(e -> {
-                        // Convert all exceptions to a ResponseStatusException
+                        if(e instanceof CompletionException completionException) {
+                            if(completionException.getCause() instanceof AmqpReplyTimeoutException timeoutException) {
+                                logger.error("Timeout while waiting for reply to message on channel {}: {}", request.methodName(), timeoutException.getMessage(), e);
+                                throw new ResponseStatusException(HttpStatus.GATEWAY_TIMEOUT, "Timed out while waiting for reply to message on channel " + request.methodName(), timeoutException);
+                            }
+                            else if(completionException.getCause() instanceof AmqpMessageReturnedException messageReturnedException) {
+                                logger.error("Message returned: {}", messageReturnedException.getMessage(), e);
+                                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Message to channel " + request.methodName() + " was returned");
+                            }
+                        }
                         logger.error("Error during send and receive: {}.  Returning failed future with ResponseStatusException HTTP 500 Internal Server Error", e.getMessage(), e);
                         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+
                     })
                     .thenCompose(msg -> {
                         try {
