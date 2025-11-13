@@ -74,8 +74,15 @@ public class GatewayController {
             CorrelationMDCUtil.setCorrelationId(UUID.randomUUID().toString());
             var result = rpcRequestProcessor.processRequest(request, accessToken, new UserId(userId));
             return result.get(timeoutInMs, TimeUnit.MILLISECONDS);
+        } catch (ProjectUnderMaintenanceException e) {
+            logger.info("Project is under maintenance. UserId: {}  Request: {}", userId, request);
+            throw e;
         } catch (ExecutionException e) {
-            if(e.getCause() instanceof CommandExecutionException ex) {
+            if(e.getCause() instanceof ProjectUnderMaintenanceException ex) {
+                logger.info("Project is under maintenance (from ExecutionException). UserId: {}  Request: {}", userId, request);
+                throw ex;
+            }
+            else if(e.getCause() instanceof CommandExecutionException ex) {
                 logger.info("Error with cause that is a CommandExecutionException.  Mapping to a ResponseStatusException: {}", ex.getStatus());
                 throw new ResponseStatusException(ex.getStatus(), e.getMessage());
             }
