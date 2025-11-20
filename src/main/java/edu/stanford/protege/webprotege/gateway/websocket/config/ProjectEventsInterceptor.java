@@ -28,11 +28,20 @@ public class ProjectEventsInterceptor  implements ChannelInterceptor {
         this.accessManager = accessManager;
     }
 
+
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
-        if(SimpMessageType.SUBSCRIBE.equals(accessor.getCommand().getMessageType())) {
+        // Only check authorization for SUBSCRIBE messages
+        // getMessageType() can be null for heartbeat messages, non-STOMP frames, or internal messages
+        if(SimpMessageType.SUBSCRIBE.equals(accessor.getMessageType())) {
+            String destination = accessor.getDestination();
+            if(destination == null || destination.isEmpty()) {
+                LOGGER.error("Missing destination in SUBSCRIBE message");
+                throw new AuthorizationServiceException("Missing destination in SUBSCRIBE message");
+            }
+
             List<String> tokenHeaders = accessor.getNativeHeader("token");
             List<String> userIdHeaders = accessor.getNativeHeader("userId");
             if(tokenHeaders == null || tokenHeaders.isEmpty()) {
@@ -41,17 +50,16 @@ public class ProjectEventsInterceptor  implements ChannelInterceptor {
             }
             if(userIdHeaders == null || userIdHeaders.isEmpty()) {
                 LOGGER.error("Missing userId header");
-
                 throw new AuthorizationServiceException("Missing userId header");
             }
             String token = tokenHeaders.get(0);
             String userId = userIdHeaders.get(0);
-            String projectId = extractProjectId(accessor.getDestination());
+            String projectId = extractProjectId(destination);
             LOGGER.info("Validation subscription. User {} project {}", userId, projectId);
 
             var hasAccessToProject = accessManager.hasPermission(Subject.forUser(userId)
                     , ProjectResource.forProject(ProjectId.valueOf(projectId)), BuiltInCapability.VIEW_PROJECT,
-                            new ExecutionContext(UserId.valueOf(userId), token, UUID.randomUUID().toString()));
+                    new ExecutionContext(UserId.valueOf(userId), token, UUID.randomUUID().toString()));
 
             if(!hasAccessToProject) {
                 throw new AuthorizationServiceException("User " + userId + " does not have access to project " + projectId);
