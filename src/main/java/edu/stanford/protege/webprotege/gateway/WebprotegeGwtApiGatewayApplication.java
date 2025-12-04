@@ -53,7 +53,7 @@ public class WebprotegeGwtApiGatewayApplication implements CommandLineRunner {
 
 	@Bean
 	@Lazy
-	MessengerImpl messageHandler(AsyncRabbitTemplate rabbitTemplate) {
-		return new MessengerImpl(rabbitTemplate);
+	MessengerImpl messageHandler(AsyncRabbitTemplate rabbitTemplate, edu.stanford.protege.webprotege.gateway.websocket.ProjectMaintenanceState maintenanceState) {
+		return new MessengerImpl(rabbitTemplate, maintenanceState);
 	}
 }

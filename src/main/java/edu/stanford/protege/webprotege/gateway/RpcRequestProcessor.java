@@ -76,7 +76,9 @@ public class RpcRequestProcessor {
                     payload, userId);
             return reply
                     .exceptionally(e -> {
-                        // Convert all exceptions to a ResponseStatusException
+                        if (e instanceof ProjectUnderMaintenanceException) {
+                            throw (ProjectUnderMaintenanceException) e;
+                        }
                         logger.error("Error during send and receive: {}.  Returning failed future with ResponseStatusException HTTP 500 Internal Server Error", e.getMessage(), e);
                         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
                     })
@@ -90,6 +92,8 @@ public class RpcRequestProcessor {
                             return CompletableFuture.failedFuture(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e));
                         }
                     });
+        } catch (ProjectUnderMaintenanceException e) {
+            return CompletableFuture.failedFuture(e);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e));
         }

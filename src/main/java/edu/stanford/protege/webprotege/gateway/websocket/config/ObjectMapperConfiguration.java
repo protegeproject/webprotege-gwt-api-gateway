@@ -12,6 +12,7 @@ import edu.stanford.protege.webprotege.change.OntologyChangedEvent;
 import edu.stanford.protege.webprotege.event.*;
 import edu.stanford.protege.webprotege.frame.*;
 import edu.stanford.protege.webprotege.gateway.websocket.config.events.ParentsChangedEvent;
+import edu.stanford.protege.webprotege.gateway.websocket.config.events.ProjectUnderMaintenanceUpdateEvent;
 import edu.stanford.protege.webprotege.gateway.websocket.config.events.UpdateUiHistoryEvent;
 import edu.stanford.protege.webprotege.hierarchy.EntityHierarchyChangedEvent;
 import edu.stanford.protege.webprotege.issues.CommentPostedEvent;
@@ -330,7 +331,8 @@ public class ObjectMapperConfiguration {
                     EntityTagsChangedEvent.class,
                     ProjectTagsChangedEvent.class,
                     WatchAddedEvent.class,
-                    WatchRemovedEvent.class);
+                    WatchRemovedEvent.class,
+                    ProjectUnderMaintenanceUpdateEvent.class);
 
             mapper.registerModule(module);
 
