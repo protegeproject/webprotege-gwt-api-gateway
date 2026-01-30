@@ -114,7 +114,7 @@ public class RpcRequestProcessor {
         try {
             var executionException = objectMapper.readValue(errorHeader, CommandExecutionException.class);
             var httpStatus = executionException.getStatus();
-            var errorMessage = httpStatus.getReasonPhrase() + " in " + applicationName;
+            var errorMessage = executionException.getCauseMessage() == null || executionException.getCauseMessage().isEmpty() ? httpStatus.getReasonPhrase() + " in " + applicationName : executionException.getCauseMessage();
             return RpcResponse.forError(request.methodName(),
                     new RpcError(httpStatus.value(),
                             errorMessage, Collections.emptyMap()));
