@@ -44,6 +44,6 @@ spring.security.oauth2:
       authorization-grant-type: authorization_code
       scope: openid
     provider.keycloak:
-      issuer-uri: http://webprotege-local.edu/keycloak-admin/realms/webprotege
+      issuer-uri: http://webprotege-local.edu/keycloak/realms/webprotege
       user-name-attribute: preferred_username
-  resourceserver.jwt.issuer-uri: http://webprotege-local.edu/keycloak-admin/realms/webprotege
+  resourceserver.jwt.issuer-uri: http://webprotege-local.edu/keycloak/realms/webprotege
