@@ -73,6 +73,10 @@ jobs:
         run: |
           echo "=== whoami ==="
           whoami
+          echo "=== groups ==="
+          groups
+          echo "=== id ==="
+          id
           echo "=== DOCKER_HOST ==="
           echo "${DOCKER_HOST:-<not set>}"
           echo "=== Docker socket ==="
@@ -82,9 +86,15 @@ jobs:
           echo "=== docker run hello-world ==="
           docker run --rm hello-world 2>&1 || true
       - name: Build package
-        run: sg docker -c "mvn --batch-mode clean package"
+        env:
+          TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
+          DOCKER_HOST: unix:///var/run/docker.sock
+        run: mvn --batch-mode clean package
       - name: Build and push image
-        run: sg docker -c "mvn --batch-mode package install"
+        env:
+          TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
+          DOCKER_HOST: unix:///var/run/docker.sock
+        run: mvn --batch-mode package install
       - name: Release
         uses: softprops/action-gh-release@v1
         env:
