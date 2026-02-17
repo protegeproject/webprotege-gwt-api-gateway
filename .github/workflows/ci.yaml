@@ -32,4 +32,4 @@ jobs:
           echo "=== docker run hello-world ==="
           docker run --rm hello-world 2>&1 || true
       - name: Build with Maven
-        run: mvn --batch-mode package
+        run: sg docker -c "mvn --batch-mode package"

@@ -82,9 +82,9 @@ jobs:
           echo "=== docker run hello-world ==="
           docker run --rm hello-world 2>&1 || true
       - name: Build package
-        run: mvn --batch-mode clean package
+        run: sg docker -c "mvn --batch-mode clean package"
       - name: Build and push image
-        run: mvn --batch-mode package install
+        run: sg docker -c "mvn --batch-mode package install"
       - name: Release
         uses: softprops/action-gh-release@v1
         env:
