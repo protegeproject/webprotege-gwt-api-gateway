@@ -19,5 +19,17 @@ jobs:
         with:
           java-version: '17'
           distribution: 'adopt'
+      - name: Debug Docker (Testcontainers)
+        run: |
+          echo "=== whoami ==="
+          whoami
+          echo "=== DOCKER_HOST ==="
+          echo "${DOCKER_HOST:-<not set>}"
+          echo "=== Docker socket ==="
+          ls -la /var/run/docker.sock 2>&1 || true
+          echo "=== docker info ==="
+          docker info 2>&1 || true
+          echo "=== docker run hello-world ==="
+          docker run --rm hello-world 2>&1 || true
       - name: Build with Maven
         run: mvn --batch-mode package
