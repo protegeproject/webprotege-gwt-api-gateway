@@ -12,6 +12,11 @@ jobs:
     outputs:
       version: ${{ steps.release-outputs.outputs.version }}
       service: ${{ steps.release-outputs.outputs.service }}
+    env:
+      TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
+      DOCKER_HOST: unix:///var/run/docker.sock
+      TESTCONTAINERS_RYUK_DISABLED: "true"
+      TESTCONTAINERS_CHECKS_DISABLE: "true"
 
     steps:
       - name: Login to Docker Hub
@@ -86,18 +91,8 @@ jobs:
           echo "=== docker run hello-world ==="
           docker run --rm hello-world 2>&1 || true
       - name: Build package
-        env:
-          TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
-          DOCKER_HOST: unix:///var/run/docker.sock
-          TESTCONTAINERS_RYUK_DISABLED: "true"
-          TESTCONTAINERS_CHECKS_DISABLE: "true"
         run: mvn --batch-mode clean package
       - name: Build and push image
-        env:
-          TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
-          DOCKER_HOST: unix:///var/run/docker.sock
-          TESTCONTAINERS_RYUK_DISABLED: "true"
-          TESTCONTAINERS_CHECKS_DISABLE: "true"
         run: mvn --batch-mode package install
       - name: Release
         uses: softprops/action-gh-release@v1
