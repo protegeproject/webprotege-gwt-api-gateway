@@ -69,6 +69,18 @@ jobs:
           git tag ${{ steps.bump.outputs.new_base_version }}
           git push origin HEAD:${GITHUB_REF##*/}
           git push origin ${{ steps.bump.outputs.new_base_version }}
+      - name: Debug Docker (Testcontainers)
+        run: |
+          echo "=== whoami ==="
+          whoami
+          echo "=== DOCKER_HOST ==="
+          echo "${DOCKER_HOST:-<not set>}"
+          echo "=== Docker socket ==="
+          ls -la /var/run/docker.sock 2>&1 || true
+          echo "=== docker info ==="
+          docker info 2>&1 || true
+          echo "=== docker run hello-world ==="
+          docker run --rm hello-world 2>&1 || true
       - name: Build package
         run: mvn --batch-mode clean package
       - name: Build and push image
