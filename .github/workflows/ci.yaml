@@ -9,6 +9,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
+      DOCKER_HOST: unix:///var/run/docker.sock
+      TESTCONTAINERS_RYUK_DISABLED: "true"
+      TESTCONTAINERS_CHECKS_DISABLE: "true"
 
     steps:
       - uses: actions/checkout@v3
@@ -19,5 +24,21 @@ jobs:
         with:
           java-version: '17'
           distribution: 'adopt'
+      - name: Debug Docker (Testcontainers)
+        run: |
+          echo "=== whoami ==="
+          whoami
+          echo "=== groups ==="
+          groups
+          echo "=== id ==="
+          id
+          echo "=== DOCKER_HOST ==="
+          echo "${DOCKER_HOST:-<not set>}"
+          echo "=== Docker socket ==="
+          ls -la /var/run/docker.sock 2>&1 || true
+          echo "=== docker info ==="
+          docker info 2>&1 || true
+          echo "=== docker run hello-world ==="
+          docker run --rm hello-world 2>&1 || true
       - name: Build with Maven
         run: mvn --batch-mode package

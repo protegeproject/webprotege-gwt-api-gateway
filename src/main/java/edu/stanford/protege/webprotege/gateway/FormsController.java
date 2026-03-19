@@ -39,7 +39,12 @@ public class FormsController {
     @GetMapping("/data/projects/{projectId}/forms")
     public ResponseEntity<Map<String, Object>> getForms(@PathVariable(PROJECT_ID) ProjectId projectId,
                                    @AuthenticationPrincipal Jwt jwt) {
-        return rpcClient.call(jwt, GET_FORM_DESCRIPTORS, Map.of(PROJECT_ID, projectId));
+        try {
+            CorrelationMDCUtil.setCorrelationId(UUID.randomUUID().toString());
+            return rpcClient.call(jwt, GET_FORM_DESCRIPTORS, Map.of(PROJECT_ID, projectId));
+        } finally {
+            CorrelationMDCUtil.clearCorrelationId();
+        }
     }
 
     @PostMapping("/data/projects/{projectId}/forms")
@@ -51,6 +56,7 @@ public class FormsController {
         // formDescriptors
         // formSelectors
         try {
+            CorrelationMDCUtil.setCorrelationId(UUID.randomUUID().toString());
             var tree = objectMapper.readValue(forms, new TypeReference<Map<String, Object>>() {});
             var params = new LinkedHashMap<>(tree);
             params.put("changeRequestId", ChangeRequestId.generate());
@@ -59,6 +65,8 @@ public class FormsController {
 
         } catch (JsonProcessingException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } finally {
+            CorrelationMDCUtil.clearCorrelationId();
         }
     }
 }
