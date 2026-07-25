@@ -1,12 +1,12 @@
 package edu.stanford.protege.webprotege.gateway.websocket.dto;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.databind.JsonNode;
 import edu.stanford.protege.webprotege.common.EventId;
 import edu.stanford.protege.webprotege.common.ProjectEvent;
 import edu.stanford.protege.webprotege.common.ProjectId;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 
 /**
  * A {@link PackagedProjectChangeEvent} enriched with the per-project sequence ordinal assigned to the
@@ -16,10 +16,12 @@ import java.util.List;
  * <p>
  * This is a gateway-local mirror of the producer's event; the field names ({@code projectId},
  * {@code eventId}, {@code sequenceNumber}, {@code projectEvents}) are the wire contract and must
- * match the producer exactly.
+ * match the producer exactly. The inner events stay raw JSON on purpose: the gateway only relays
+ * them, and deserializing them into this service's own event model breaks delivery whenever that
+ * model drifts from the producer's serialization.
  */
 @JsonTypeName(SequencedPackagedProjectChangeEvent.CHANNEL)
-public record SequencedPackagedProjectChangeEvent(ProjectId projectId, EventId eventId, int sequenceNumber, List<ProjectEvent> projectEvents) implements ProjectEvent {
+public record SequencedPackagedProjectChangeEvent(ProjectId projectId, EventId eventId, int sequenceNumber, JsonNode projectEvents) implements ProjectEvent {
 
     public final static String CHANNEL = "webprotege.events.projects.SequencedPackagedProjectChange";
 

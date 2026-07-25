@@ -1,9 +1,14 @@
 package edu.stanford.protege.webprotege.gateway.websocket.dto;
 
-import edu.stanford.protege.webprotege.common.Event;
+import com.fasterxml.jackson.databind.JsonNode;
 import edu.stanford.protege.webprotege.event.EventTag;
 
-import java.util.List;
-
-public record EventList <E extends Event> (EventTag startTag, List<E> events, EventTag endTag){
+/**
+ * The window of events the client receives. The gateway only relays the events — it never acts on
+ * their contents — so they are carried as raw JSON rather than typed objects: the producers (the
+ * backend and the event-history service) and the browser client agree on the event payloads, and
+ * forcing them through this service's own event model just makes delivery fail whenever the
+ * gateway's model drifts from the producer's serialization.
+ */
+public record EventList(EventTag startTag, JsonNode events, EventTag endTag) {
 }

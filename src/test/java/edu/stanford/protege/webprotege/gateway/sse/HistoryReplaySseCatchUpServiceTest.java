@@ -1,6 +1,7 @@
 package edu.stanford.protege.webprotege.gateway.sse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.util.concurrent.MoreExecutors;
 import edu.stanford.protege.webprotege.common.ProjectId;
 import edu.stanford.protege.webprotege.common.UserId;
@@ -122,13 +123,13 @@ class HistoryReplaySseCatchUpServiceTest {
 
     private static ProjectEventsQueryResponse liveResponse() {
         ProjectEventsQueryResponse response = new ProjectEventsQueryResponse();
-        response.events = new EventList<>(EventTag.getFirst(), List.of(), EventTag.get(1));
+        response.events = new EventList(EventTag.getFirst(), JsonNodeFactory.instance.arrayNode(), EventTag.get(1));
         return response;
     }
 
     private static ProjectEventsQueryResponse historyResponse(int startTag, int endTag) {
         ProjectEventsQueryResponse response = new ProjectEventsQueryResponse();
-        response.events = new EventList<>(EventTag.get(startTag), List.of(), EventTag.get(endTag));
+        response.events = new EventList(EventTag.get(startTag), JsonNodeFactory.instance.arrayNode(), EventTag.get(endTag));
         return response;
     }
 

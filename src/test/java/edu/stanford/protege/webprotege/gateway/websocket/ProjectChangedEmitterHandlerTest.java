@@ -66,7 +66,8 @@ class ProjectChangedEmitterHandlerTest {
                 projectId,
                 new OWLClassImpl(IRI.create("http://www.example.org/R9UuCy8Vzvft2f4fc67VwGs")),
                 new ArrayList<>());
-        sequencedEvent = new SequencedPackagedProjectChangeEvent(projectId, eventId, SEQUENCE_NUMBER, List.of(entityTagsChangedEvent));
+        sequencedEvent = new SequencedPackagedProjectChangeEvent(projectId, eventId, SEQUENCE_NUMBER,
+                                                                  objectMapper.valueToTree(List.of(entityTagsChangedEvent)));
     }
 
     @Test
@@ -133,7 +134,7 @@ class ProjectChangedEmitterHandlerTest {
         ArgumentCaptor<ProjectEventsQueryResponse> sseCaptor = ArgumentCaptor.forClass(ProjectEventsQueryResponse.class);
         verify(sseStreamRegistry).publish(eq(projectId), eq((long) SEQUENCE_NUMBER), sseCaptor.capture());
 
-        EventList<?> events = sseCaptor.getValue().events;
+        EventList events = sseCaptor.getValue().events;
         assertEquals(SEQUENCE_NUMBER - 1, events.startTag().getOrdinal());
         assertEquals(SEQUENCE_NUMBER, events.endTag().getOrdinal());
         assertEquals(sequencedEvent.projectEvents(), events.events());

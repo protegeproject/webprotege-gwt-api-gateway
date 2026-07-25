@@ -1,5 +1,6 @@
 package edu.stanford.protege.webprotege.gateway.sse;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.stanford.protege.webprotege.common.ProjectId;
 import edu.stanford.protege.webprotege.common.UserId;
@@ -176,7 +177,7 @@ class SseStreamRegistryTest {
 
     private static ProjectEventsQueryResponse response() {
         ProjectEventsQueryResponse response = new ProjectEventsQueryResponse();
-        response.events = new EventList<>(EventTag.getFirst(), List.of(), EventTag.get(1));
+        response.events = new EventList(EventTag.getFirst(), JsonNodeFactory.instance.arrayNode(), EventTag.get(1));
         return response;
     }
 
