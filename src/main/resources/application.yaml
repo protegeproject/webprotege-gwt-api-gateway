@@ -30,6 +30,11 @@ webprotege:
     timeout: 120000
     event-subscribe: true
   allowedOrigin: webprotege-local.edu
+  sse:
+    # Keep-alive interval; must stay below the nginx proxy_read_timeout (60s) so idle streams survive.
+    heartbeat-interval: 20s
+    # Long-lived stream cap; each reconnect is a fresh authorization checkpoint.
+    stream-timeout: 30m
   minio:
     accessKey: webprotege
     endPoint: http://webprotege-local.edu:9000
