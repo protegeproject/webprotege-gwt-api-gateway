@@ -59,6 +59,13 @@ public class SseStreamRegistry {
 
     private final ConcurrentMap<ProjectId, Set<Subscriber>> subscribersByProject = new ConcurrentHashMap<>();
 
+    /**
+     * The highest sequence published per project since this instance started. Heartbeats carry it
+     * so a client can notice that events were lost on a connection that never errored (the browser
+     * can silently drop frames delivered across a brief network loss) and pull the difference.
+     */
+    private final ConcurrentMap<ProjectId, Long> lastPublishedSeqByProject = new ConcurrentHashMap<>();
+
     private final ObjectMapper objectMapper;
 
     private final SseProperties properties;
@@ -139,6 +146,7 @@ public class SseStreamRegistry {
      * executor. A stream still catching up buffers the event instead of sending it.
      */
     public void publish(ProjectId projectId, long sequenceId, Object payload) {
+        lastPublishedSeqByProject.merge(projectId, sequenceId, Math::max);
         Set<Subscriber> subscribers = subscribersByProject.get(projectId);
         if (subscribers == null || subscribers.isEmpty()) {
             return;
@@ -215,7 +223,8 @@ public class SseStreamRegistry {
     private void sendComment(ProjectId projectId, Subscriber subscriber) {
         synchronized (subscriber) {
             try {
-                subscriber.emitter().send(SseEmitter.event().name(HEARTBEAT_EVENT_NAME).data(""));
+                long headSeq = lastPublishedSeqByProject.getOrDefault(projectId, 0L);
+                subscriber.emitter().send(SseEmitter.event().name(HEARTBEAT_EVENT_NAME).data(Long.toString(headSeq)));
             } catch (Exception e) {
                 LOGGER.debug("Evicting unreachable SSE subscriber for project {}: {}", projectId, e.getMessage());
                 remove(projectId, subscriber);
