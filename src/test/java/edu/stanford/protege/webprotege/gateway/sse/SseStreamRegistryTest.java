@@ -100,7 +100,7 @@ class SseStreamRegistryTest {
 
         ArgumentCaptor<SseEventBuilder> captor = ArgumentCaptor.forClass(SseEventBuilder.class);
         verify(emitter).send(captor.capture());
-        assertTrue(render(captor.getValue()).contains(":keep-alive"));
+        assertTrue(render(captor.getValue()).contains("event:heartbeat"));
     }
 
     @Test

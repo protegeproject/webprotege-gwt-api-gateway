@@ -47,7 +47,13 @@ public class SseStreamRegistry {
     /** SSE {@code event:} name; the client filters on this. Matches the STOMP payload contract. */
     static final String EVENT_NAME = "project-events";
 
-    static final String HEARTBEAT_COMMENT = "keep-alive";
+    /**
+     * SSE {@code event:} name for keep-alives. A named event with a data field rather than a
+     * comment frame: comments never reach page JavaScript, and the client needs to SEE heartbeats
+     * to tell a quiet-but-healthy stream from a half-open zombie connection (a network drop that
+     * kills delivery without surfacing any error), which it recovers by reopening the stream.
+     */
+    static final String HEARTBEAT_EVENT_NAME = "heartbeat";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SseStreamRegistry.class);
 
@@ -172,7 +178,7 @@ public class SseStreamRegistry {
         }
     }
 
-    /** Send a keep-alive comment to every open stream; failed sends evict. Package-visible for tests. */
+    /** Send a heartbeat event to every open stream; failed sends evict. Package-visible for tests. */
     void heartbeat() {
         subscribersByProject.forEach((projectId, subscribers) -> subscribers.forEach(subscriber ->
                 dispatchExecutor.execute(() -> sendComment(projectId, subscriber))));
@@ -209,7 +215,7 @@ public class SseStreamRegistry {
     private void sendComment(ProjectId projectId, Subscriber subscriber) {
         synchronized (subscriber) {
             try {
-                subscriber.emitter().send(SseEmitter.event().comment(HEARTBEAT_COMMENT));
+                subscriber.emitter().send(SseEmitter.event().name(HEARTBEAT_EVENT_NAME).data(""));
             } catch (Exception e) {
                 LOGGER.debug("Evicting unreachable SSE subscriber for project {}: {}", projectId, e.getMessage());
                 remove(projectId, subscriber);
