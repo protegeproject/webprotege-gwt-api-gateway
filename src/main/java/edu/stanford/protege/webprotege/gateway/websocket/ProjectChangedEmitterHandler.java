@@ -2,6 +2,7 @@ package edu.stanford.protege.webprotege.gateway.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.stanford.protege.webprotege.event.EventTag;
+import edu.stanford.protege.webprotege.gateway.sse.SseStreamRegistry;
 import edu.stanford.protege.webprotege.gateway.websocket.dto.EventList;
 import edu.stanford.protege.webprotege.gateway.websocket.dto.ProjectEventsQueryResponse;
 import edu.stanford.protege.webprotege.gateway.websocket.dto.SequencedPackagedProjectChangeEvent;
@@ -21,10 +22,15 @@ public class ProjectChangedEmitterHandler implements EventHandler<SequencedPacka
 
     private final SimpMessagingTemplate simpMessagingTemplate;
 
+    private final SseStreamRegistry sseStreamRegistry;
+
     private final ObjectMapper objectMapper;
 
-    public ProjectChangedEmitterHandler(SimpMessagingTemplate simpMessagingTemplate, ObjectMapper objectMapper) {
+    public ProjectChangedEmitterHandler(SimpMessagingTemplate simpMessagingTemplate,
+                                        SseStreamRegistry sseStreamRegistry,
+                                        ObjectMapper objectMapper) {
         this.simpMessagingTemplate = simpMessagingTemplate;
+        this.sseStreamRegistry = sseStreamRegistry;
         this.objectMapper = objectMapper;
     }
 
@@ -52,6 +58,11 @@ public class ProjectChangedEmitterHandler implements EventHandler<SequencedPacka
             int sequenceNumber = event.sequenceNumber();
             ProjectEventsQueryResponse response = new ProjectEventsQueryResponse();
             response.events = new EventList(EventTag.get(sequenceNumber - 1), event.projectEvents(), EventTag.get(sequenceNumber));
+            // Fan the same payload out to both delivery paths: the SSE streams (id = sequence number)
+            // and the legacy STOMP topic. STOMP stays until #308 retires it. publish() serialises on
+            // this thread but dispatches each send on its own executor, so a slow client cannot stall
+            // the Rabbit listener thread.
+            sseStreamRegistry.publish(event.projectId(), sequenceNumber, response);
             simpMessagingTemplate.send("/topic/project-events/" + event.projectId().id(), new GenericMessage<>(objectMapper.writeValueAsBytes(response)));
         } catch (Exception e) {
             // Pass the throwable so the cause/stack are visible in the log.

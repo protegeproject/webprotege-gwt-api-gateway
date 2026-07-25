@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.stanford.protege.webprotege.common.EventId;
 import edu.stanford.protege.webprotege.common.ProjectId;
 import edu.stanford.protege.webprotege.event.EventTag;
+import edu.stanford.protege.webprotege.gateway.sse.SseStreamRegistry;
 import edu.stanford.protege.webprotege.gateway.websocket.config.ObjectMapperConfiguration;
 import edu.stanford.protege.webprotege.gateway.websocket.dto.EventList;
 import edu.stanford.protege.webprotege.gateway.websocket.dto.ProjectEventsQueryResponse;
@@ -27,6 +28,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
@@ -37,6 +39,9 @@ class ProjectChangedEmitterHandlerTest {
 
     @Mock
     private SimpMessagingTemplate simpMessagingTemplate;
+
+    @Mock
+    private SseStreamRegistry sseStreamRegistry;
 
     private ProjectChangedEmitterHandler eventHandler;
 
@@ -54,7 +59,7 @@ class ProjectChangedEmitterHandlerTest {
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapperConfiguration().objectMapper();
-        eventHandler = new ProjectChangedEmitterHandler(simpMessagingTemplate, objectMapper);
+        eventHandler = new ProjectChangedEmitterHandler(simpMessagingTemplate, sseStreamRegistry, objectMapper);
         projectId = ProjectId.generate();
         eventId = EventId.generate();
         entityTagsChangedEvent = new EntityTagsChangedEvent(new EventId("eventId"),
@@ -119,6 +124,27 @@ class ProjectChangedEmitterHandlerTest {
         assertTrue(eventList.has("startTag"), "event list must carry 'startTag'");
         assertTrue(eventList.has("events"), "event list must carry 'events'");
         assertTrue(eventList.has("endTag"), "event list must carry 'endTag'");
+    }
+
+    @Test
+    void GIVEN_sequencedEvent_WHEN_handleEvent_THEN_publishedToSseRegistryWithSequenceIdAndTags() {
+        eventHandler.handleEvent(sequencedEvent);
+
+        ArgumentCaptor<ProjectEventsQueryResponse> sseCaptor = ArgumentCaptor.forClass(ProjectEventsQueryResponse.class);
+        verify(sseStreamRegistry).publish(eq(projectId), eq((long) SEQUENCE_NUMBER), sseCaptor.capture());
+
+        EventList<?> events = sseCaptor.getValue().events;
+        assertEquals(SEQUENCE_NUMBER - 1, events.startTag().getOrdinal());
+        assertEquals(SEQUENCE_NUMBER, events.endTag().getOrdinal());
+        assertEquals(sequencedEvent.projectEvents(), events.events());
+    }
+
+    @Test
+    void GIVEN_sequencedEvent_WHEN_handleEvent_THEN_bothSinksReceiveTheSameSequence() {
+        eventHandler.handleEvent(sequencedEvent);
+
+        verify(sseStreamRegistry).publish(eq(projectId), eq((long) SEQUENCE_NUMBER), any(ProjectEventsQueryResponse.class));
+        verify(simpMessagingTemplate).send(eq("/topic/project-events/" + projectId.id()), any(GenericMessage.class));
     }
 
     private JsonNode payloadOf(GenericMessage<?> message) throws JsonProcessingException {
