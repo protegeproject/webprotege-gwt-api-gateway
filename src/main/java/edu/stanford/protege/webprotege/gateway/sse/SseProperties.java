@@ -18,6 +18,13 @@ public class SseProperties {
 
     private Duration streamTimeout = Duration.ofMinutes(30);
 
+    /**
+     * Cap on the live events a reconnecting stream buffers while its history replay is fetched.
+     * Overflow drops the excess and lets the client's gap detection recover; it only guards against
+     * unbounded growth if a history query stalls.
+     */
+    private int catchUpBufferLimit = 1000;
+
     public Duration getHeartbeatInterval() {
         return heartbeatInterval;
     }
@@ -32,5 +39,13 @@ public class SseProperties {
 
     public void setStreamTimeout(Duration streamTimeout) {
         this.streamTimeout = streamTimeout;
+    }
+
+    public int getCatchUpBufferLimit() {
+        return catchUpBufferLimit;
+    }
+
+    public void setCatchUpBufferLimit(int catchUpBufferLimit) {
+        this.catchUpBufferLimit = catchUpBufferLimit;
     }
 }

@@ -7,9 +7,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 /**
  * Seam for replaying events a reconnecting client missed while it was disconnected.
  *
- * <p>The controller subscribes the emitter to live events first, then calls this service so a
- * later change can replay from the durable history (identified by {@code lastEventId}) before the
- * buffered live events flush. The live-only implementation shipped here does nothing.
+ * <p>The controller subscribes the emitter to live events first, then calls this service so the
+ * events missed since {@code lastEventId} can be replayed from the durable history ahead of the
+ * live events buffered in the meantime. See {@link HistoryReplaySseCatchUpService}.
  */
 public interface SseCatchUpService {
 

@@ -31,6 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -122,6 +124,54 @@ class SseStreamRegistryTest {
         onCompletion.getValue().run();
 
         assertEquals(0, registry.subscriberCount(projectId));
+    }
+
+    @Test
+    void subscriberWithLastEventIdBuffersLiveEventsUntilCatchUp() throws IOException {
+        SseEmitter emitter = mock(SseEmitter.class);
+        registry.register(projectId, emitter, "3", executionContext);
+
+        registry.publish(projectId, 4L, response());
+
+        // Held back until the reconnect's history replay flushes, so it cannot overtake the replay.
+        verify(emitter, never()).send(any(SseEventBuilder.class));
+        assertEquals(1, registry.subscriberCount(projectId));
+    }
+
+    @Test
+    void completeCatchUpEmitsReplayThenFlushesBufferDroppingDuplicates() throws IOException {
+        SseEmitter emitter = mock(SseEmitter.class);
+        registry.register(projectId, emitter, "4", executionContext);
+        registry.publish(projectId, 5L, response());
+        registry.publish(projectId, 6L, response());
+        registry.publish(projectId, 7L, response());
+
+        // Replay covers through seq 6; buffered 5 and 6 are duplicates, only 7 survives.
+        registry.completeCatchUp(projectId, emitter, 6L, response());
+
+        ArgumentCaptor<SseEventBuilder> captor = ArgumentCaptor.forClass(SseEventBuilder.class);
+        verify(emitter, times(2)).send(captor.capture());
+        List<String> frames = captor.getAllValues().stream().map(SseStreamRegistryTest::render).toList();
+        assertTrue(frames.get(0).contains("id:6"), frames.get(0));
+        assertTrue(frames.get(1).contains("id:7"), frames.get(1));
+    }
+
+    @Test
+    void completeCatchUpWithoutReplayFlushesBufferedThenResumesLiveDelivery() throws IOException {
+        SseEmitter emitter = mock(SseEmitter.class);
+        registry.register(projectId, emitter, "4", executionContext);
+        registry.publish(projectId, 5L, response());
+
+        // No replay (e.g. history query failed); buffered 5 (> 4) still flushes, stream stays open.
+        registry.completeCatchUp(projectId, emitter, 4L, null);
+        // Live delivery has resumed: a later event is sent straight through, not buffered.
+        registry.publish(projectId, 6L, response());
+
+        ArgumentCaptor<SseEventBuilder> captor = ArgumentCaptor.forClass(SseEventBuilder.class);
+        verify(emitter, times(2)).send(captor.capture());
+        List<String> frames = captor.getAllValues().stream().map(SseStreamRegistryTest::render).toList();
+        assertTrue(frames.get(0).contains("id:5"), frames.get(0));
+        assertTrue(frames.get(1).contains("id:6"), frames.get(1));
     }
 
     private static ProjectEventsQueryResponse response() {

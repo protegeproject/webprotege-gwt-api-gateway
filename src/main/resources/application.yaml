@@ -35,6 +35,8 @@ webprotege:
     heartbeat-interval: 20s
     # Long-lived stream cap; each reconnect is a fresh authorization checkpoint.
     stream-timeout: 30m
+    # Max live events buffered per reconnecting stream while its history replay is fetched; overflow relies on client gap detection.
+    catch-up-buffer-limit: 1000
   minio:
     accessKey: webprotege
     endPoint: http://webprotege-local.edu:9000
