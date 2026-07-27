@@ -29,6 +29,8 @@ webprotege:
     eventsqueue: webprotege-gwt-api-gateway-event-queue
     timeout: 120000
     event-subscribe: true
+    # Each gateway instance pins its own long-lived SSE streams, so every instance must see every event; give each its own queue on the fanout exchange rather than competing on one shared queue.
+    event-queue-per-instance: true
   allowedOrigin: webprotege-local.edu
   sse:
     # Keep-alive interval; must stay below the nginx proxy_read_timeout (60s) so idle streams survive.
