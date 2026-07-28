@@ -1,4 +1,4 @@
-package edu.stanford.protege.webprotege.gateway.websocket.config;
+package edu.stanford.protege.webprotege.gateway;
 
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.DeserializationFeature;

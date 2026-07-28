@@ -1,4 +1,4 @@
-package edu.stanford.protege.webprotege.gateway.websocket.dto;
+package edu.stanford.protege.webprotege.gateway.sse;
 
 import com.google.common.base.CaseFormat;
 import edu.stanford.protege.webprotege.authorization.BasicCapability;

@@ -1,4 +1,4 @@
-package edu.stanford.protege.webprotege.gateway.websocket.dto;
+package edu.stanford.protege.webprotege.gateway.sse;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,7 +9,7 @@ import edu.stanford.protege.webprotege.common.ProjectId;
 import javax.annotation.Nonnull;
 
 /**
- * A {@link PackagedProjectChangeEvent} enriched with the per-project sequence ordinal assigned to the
+ * A packaged project-change bundle enriched with the per-project sequence ordinal assigned to the
  * bundle when it was durably archived. Published post-persistence on {@link #CHANNEL} by the
  * event-history-service so the gateway can push it with truthful event tags
  * ({@code startTag = sequenceNumber - 1}, {@code endTag = sequenceNumber}).

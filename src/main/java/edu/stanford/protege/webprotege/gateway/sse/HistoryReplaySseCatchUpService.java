@@ -2,8 +2,6 @@ package edu.stanford.protege.webprotege.gateway.sse;
 
 import edu.stanford.protege.webprotege.common.ProjectId;
 import edu.stanford.protege.webprotege.event.EventTag;
-import edu.stanford.protege.webprotege.gateway.websocket.dto.ProjectEventsQueryRequest;
-import edu.stanford.protege.webprotege.gateway.websocket.dto.ProjectEventsQueryResponse;
 import edu.stanford.protege.webprotege.ipc.CommandExecutor;
 import edu.stanford.protege.webprotege.ipc.ExecutionContext;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package edu.stanford.protege.webprotege.gateway.websocket.dto;
+package edu.stanford.protege.webprotege.gateway.sse;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
