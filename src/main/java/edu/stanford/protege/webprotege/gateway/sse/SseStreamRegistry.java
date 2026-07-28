@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class SseStreamRegistry {
 
-    /** SSE {@code event:} name; the client filters on this. Matches the STOMP payload contract. */
+    /** SSE {@code event:} name; the client filters on this. */
     static final String EVENT_NAME = "project-events";
 
     /**

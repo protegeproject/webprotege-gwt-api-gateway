@@ -1,4 +1,4 @@
-package edu.stanford.protege.webprotege.gateway.websocket.dto;
+package edu.stanford.protege.webprotege.gateway.sse;
 
 import edu.stanford.protege.webprotege.common.ProjectId;
 import edu.stanford.protege.webprotege.common.Request;

@@ -1,7 +1,5 @@
 package edu.stanford.protege.webprotege.gateway.sse;
 
-import edu.stanford.protege.webprotege.gateway.websocket.dto.ProjectEventsQueryRequest;
-import edu.stanford.protege.webprotege.gateway.websocket.dto.ProjectEventsQueryResponse;
 import edu.stanford.protege.webprotege.ipc.CommandExecutor;
 import edu.stanford.protege.webprotege.ipc.impl.CommandExecutorImpl;
 import org.springframework.context.annotation.Bean;

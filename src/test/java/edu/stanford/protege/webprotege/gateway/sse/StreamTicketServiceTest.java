@@ -4,8 +4,6 @@ import edu.stanford.protege.webprotege.authorization.ProjectResource;
 import edu.stanford.protege.webprotege.authorization.Subject;
 import edu.stanford.protege.webprotege.common.ProjectId;
 import edu.stanford.protege.webprotege.common.UserId;
-import edu.stanford.protege.webprotege.gateway.websocket.AccessManager;
-import edu.stanford.protege.webprotege.gateway.websocket.dto.BuiltInCapability;
 import edu.stanford.protege.webprotege.ipc.ExecutionContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

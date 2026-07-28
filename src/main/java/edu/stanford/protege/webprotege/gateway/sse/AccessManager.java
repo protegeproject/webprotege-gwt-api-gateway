@@ -1,8 +1,7 @@
-package edu.stanford.protege.webprotege.gateway.websocket;
+package edu.stanford.protege.webprotege.gateway.sse;
 
 
 import edu.stanford.protege.webprotege.authorization.*;
-import edu.stanford.protege.webprotege.gateway.websocket.dto.BuiltInCapability;
 import edu.stanford.protege.webprotege.ipc.CommandExecutor;
 import edu.stanford.protege.webprotege.ipc.ExecutionContext;
 import org.slf4j.Logger;

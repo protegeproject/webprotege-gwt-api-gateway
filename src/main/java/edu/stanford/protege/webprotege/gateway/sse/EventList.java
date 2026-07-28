@@ -1,4 +1,4 @@
-package edu.stanford.protege.webprotege.gateway.websocket.dto;
+package edu.stanford.protege.webprotege.gateway.sse;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import edu.stanford.protege.webprotege.event.EventTag;
